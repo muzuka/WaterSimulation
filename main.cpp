@@ -1,9 +1,18 @@
 
+
+/*
+ *  Water Simulation
+ *  
+ *  Author: Sean Brown
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h> 
 #include <vector>
-#include "BSpline.h"
+#include "Vector.h"
+#include "Particle.h"
 
 #define _GLFW_X11
 #define _GLFW_GLX
@@ -20,10 +29,39 @@
 
 using namespace std;
 
+typedef enum Simulation {
+    CUP,
+    WATERFALL,
+    FUNNEL,
+    STIRRING
+};
+
 GLFWwindow* window;
+
+vector<Particle> particles;
+
+Simulation        = CUP;
+int   numOfPoints = 10;
 
 int   width  = 1024;
 int   height = 760;
+
+void init() {
+
+    particles = vector<Particle>(numOfPoints);
+
+    
+}
+
+void update() {
+
+}
+
+void render() {
+    for(unsigned int i = 0; i < particles.size(); i++) {
+        particles[i].render();
+    }
+}
 
 int main(int argc, char* argv[]) {
 
@@ -39,13 +77,16 @@ int main(int argc, char* argv[]) {
 
     glfwMakeContextCurrent(window);
 
-    glPointSize(pointSize);
+    init();
 
     while(!glfwWindowShouldClose(window)) {
 
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         
+        update();
+
+        render();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
