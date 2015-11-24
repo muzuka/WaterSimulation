@@ -27,8 +27,6 @@
  	Particle(Vector, Vector);           // (pos, color)
 
   void render();
-  
-  void toggleMovement();
 
  	Vector getPosition();
   Vector getVelocity();
