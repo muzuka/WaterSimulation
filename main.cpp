@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <math.h> 
 #include <vector>
+#include <map>
 #include "Vector.h"
 #include "Particle.h"
 
@@ -29,28 +30,75 @@
 
 using namespace std;
 
-typedef enum Simulation {
+typedef enum {
     CUP,
+    SHOWER,
     WATERFALL,
     FUNNEL,
     STIRRING
-};
+} Simulation;
 
 GLFWwindow* window;
 
 vector<Particle> particles;
 
-Simulation        = CUP;
+Simulation sim    = SHOWER;
 int   numOfPoints = 10;
 
-int   width  = 1024;
-int   height = 760;
+double pointSize = 10.0f;
+double nearPlane = 1.0f;
+double farPlane  = 100.0f;
+double fov       = 60.0f;
+int   width      = 1024;
+int   height     = 760;
+
+void initCup() {
+
+}
+
+void initShower() {
+    for(unsigned int i = 0; i < particles.size(); i++) {
+        particles.push_back(Particle(Vector(i/10.0f, 0.9f, 0.0f), Vector(0.0f, 0.0f, 1.0f)));
+    }
+}
+
+void initWaterfall() {
+
+}
+
+void initFunnel() {
+
+}
+
+void initStirring() {
+
+}
 
 void init() {
 
     particles = vector<Particle>(numOfPoints);
 
-    
+    glPointSize(pointSize);
+
+    switch(sim) {
+        case CUP:
+            initCup();
+            break;
+        case SHOWER:
+            initShower();
+            break;
+        case WATERFALL:
+            initWaterfall();
+            break;
+        case FUNNEL:
+            initFunnel();
+            break;
+        case STIRRING:
+            initStirring();
+            break;
+        default:
+            break;
+    }
 }
 
 void update() {
@@ -69,7 +117,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    window = glfwCreateWindow(width, height, "The B Spline - CPSC 589 Assignment 2", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Water Particles", NULL, NULL);
     if(!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -84,6 +132,10 @@ int main(int argc, char* argv[]) {
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(fov, width/height, nearPlane, farPlane);
+
         update();
 
         render();
@@ -96,6 +148,6 @@ int main(int argc, char* argv[]) {
     glfwDestroyWindow(window);
     glfwTerminate();
 
-    return 1;
+    return 0;
 
 }
