@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <math.h> 
 #include <vector>
@@ -114,40 +115,42 @@ void render() {
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
   
-    for(unsigned int i = 0; i < particles.size(); i++) {
-        particles[i].render();
-    }
+    //for(unsigned int i = 0; i < particles.size(); i++) {
+        //particles[i].render();
+    //}
     
     glfwSwapBuffers(window);
     glfwPollEvents();
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char **argv)
+{
 
-    if(!glfwInit()) {
-        exit(EXIT_FAILURE);
-    }
+	if(!glfwInit()) {
+    cout << "glfw failed to initialize" << endl;
+		exit(EXIT_FAILURE);
+	}
+	
+	window = glfwCreateWindow(width, height, "Water Animation", NULL, NULL);
+	if(!window) {
+    cout << "Window failed to be created" << endl;
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
+  
+	glfwMakeContextCurrent(window);
 
-    window = glfwCreateWindow(width, height, "Water Particles", NULL, NULL);
-    if(!window) {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
+	init();
+  
+	while(!glfwWindowShouldClose(window)) {
+    update();
 
-    glfwMakeContextCurrent(window);
-
-    init();
-
-    while(!glfwWindowShouldClose(window)) {
-
-        update();
-
-        render();
-    }
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
-
-    return 0;
-
+    render();
+  }
+  
+	glfwDestroyWindow(window);
+	glfwTerminate();
+	
+	return 0;
 }
+
