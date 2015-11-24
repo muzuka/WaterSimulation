@@ -106,9 +106,20 @@ void update() {
 }
 
 void render() {
+  
+    glViewport(0, 0, width, height);
+    glClear(GL_COLOR_BUFFER_BIT);
+        
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(fov, width/height, nearPlane, farPlane);
+  
     for(unsigned int i = 0; i < particles.size(); i++) {
         particles[i].render();
     }
+    
+    glfwSwapBuffers(window);
+    glfwPollEvents();
 }
 
 int main(int argc, char* argv[]) {
@@ -129,20 +140,9 @@ int main(int argc, char* argv[]) {
 
     while(!glfwWindowShouldClose(window)) {
 
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
-        
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(fov, width/height, nearPlane, farPlane);
-
         update();
 
         render();
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-
     }
 
     glfwDestroyWindow(window);
