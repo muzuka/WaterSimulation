@@ -96,6 +96,6 @@ int main(int argc, char* argv[]) {
     glfwDestroyWindow(window);
     glfwTerminate();
 
-    return 1;
+    return 0;
 
 }
