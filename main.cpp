@@ -114,26 +114,33 @@ void initStirring() {
 
 void init() {
 
+    particles = vector<Particle>();
+
     glPointSize(pointSize);
 
     switch(sim) {
         case CUP:
-            initCup();
-            break;
+          numOfPoints = 25;
+          initCup();
+          break;
         case SHOWER:
-            initShower();
-            break;
+          numOfPoints = 10;
+          initShower();
+          break;
         case WATERFALL:
-            initWaterfall();
-            break;
+          numOfPoints = 250;
+          initWaterfall();
+          break;
         case FUNNEL:
-            initFunnel();
-            break;
+          numOfPoints = 35;
+          initFunnel();
+          break;
         case STIRRING:
-            initStirring();
-            break;
+          numOfPoints = 125;
+          initStirring();
+          break;
         default:
-            break;
+          break;
     }
 }
 
