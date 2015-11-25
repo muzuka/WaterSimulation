@@ -39,7 +39,10 @@ GLFWwindow* window;
 vector<Particle> particles;
 
 Simulation sim    = SHOWER;
-int   numOfPoints = 10;
+int pointHeight   = 5;
+int pointWidth    = 5;
+int pointDepth    = 5;
+int numOfPoints   = 10;
 bool   simulate   = false;
 double sigma      = 0.42f;
 Vector gravity    = Vector(0.0f, -0.001f, 0.0f);
@@ -51,9 +54,7 @@ double farPlane  = 100.0f;
 double fov       = 60.0f;
 int width        = 1024;
 int height       = 760;
-int pointHeight  = 5;
-int pointWidth   = 5;
-int pointDepth   = 5;
+
 
 double kernel(Vector p) {
   double normalDistance = Vector::dotProduct(p, p) / (2 * sigma);
@@ -143,23 +144,23 @@ void init() {
 
     switch(sim) {
         case CUP:
-          numOfPoints = 25;
+          numOfPoints = pointWidth * pointHeight;
           initCup();
           break;
         case SHOWER:
-          numOfPoints = 10;
+          numOfPoints = pointWidth;
           initShower();
           break;
         case WATERFALL:
-          numOfPoints = 250;
+          numOfPoints = pointWidth * pointHeight * pointDepth;
           initWaterfall();
           break;
         case FUNNEL:
-          numOfPoints = 35;
+          numOfPoints = pointWidth * pointHeight;
           initFunnel();
           break;
         case STIRRING:
-          numOfPoints = 125;
+          numOfPoints = pointWidth * pointHeight * pointDepth;
           initStirring();
           break;
         default:
