@@ -26,6 +26,8 @@ public:
 	Vector operator+(Vector);
 	Vector operator-(Vector);
   	Vector operator/(double);
+  	Vector operator+=(Vector);
+  	Vector operator-=(Vector);
   	bool   operator==(Vector);
 
 	double getX();

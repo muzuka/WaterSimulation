@@ -37,6 +37,14 @@ Vector::Vector() {
    return Vector(this->x / arg, this->y / arg, this->z / arg);
  }
  
+ Vector Vector::operator+=(Vector arg) {
+ 	return Vector(this->x, this->y, this->z) + arg;
+ }
+
+ Vector Vector::operator-=(Vector arg) {
+ 	return Vector(this->x, this->y, this->z) - arg;
+ }
+
  bool Vector::operator==(Vector x) {
    return (x.getX() == this->x) && (x.getY() == this->y) && (x.getZ() == this->z);
  }
