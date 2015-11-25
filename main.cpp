@@ -49,8 +49,11 @@ double pointSize = 10.0f;
 double nearPlane = 1.0f;
 double farPlane  = 100.0f;
 double fov       = 60.0f;
-int   width      = 1024;
-int   height     = 760;
+int width        = 1024;
+int height       = 760;
+int pointHeight  = 5;
+int pointWidth   = 5;
+int pointDepth   = 5;
 
 double kernel(Vector p) {
   double normalDistance = Vector::dotProduct(p, p) / (2 * sigma);
@@ -91,25 +94,45 @@ Vector accelDueToViscosity(int i) {
 }
 
 void initCup() {
-
+  for(int i = 0; i < pointWidth; i++) {
+    for(int j = 0; j < pointHeight; j++) {
+      particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -2.0f)));
+    }
+  }
 }
 
 void initShower() {
-    for(unsigned int i = 0; i < numOfPoints; i++) {
-        particles.push_back(Particle(Vector(i/10.0f, 0.9f, -2.0f), Vector(1.0f, 1.0f, 1.0f)));
-    }
+  for(int i = 0; i < pointWidth; i++) {
+      particles.push_back(Particle(Vector(i/10.0f, 0.9f, -2.0f)));
+  }
 }
 
 void initWaterfall() {
-
+  for(int i = 0; i < pointWidth; i++) {
+    for(int j = 0; j < pointHeight; j++) {
+      for(int k = 0; k < pointDepth; k++) {
+        particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -(k/10.0f))));
+      }
+    }
+  }
 }
 
 void initFunnel() {
-
+  for(int i = 0; i < pointWidth; i++) {
+    for(int j = 0; j < pointHeight; j++) {
+      particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -2.0f)));
+    }
+  }
 }
 
 void initStirring() {
-
+  for(int i = 0; i < pointWidth; i++) {
+    for(int j = 0; j < pointHeight; j++) {
+      for(int k = 0; k < pointDepth; k++) {
+        particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -(k/10.0f))));
+      } 
+    }
+  }
 }
 
 void init() {
