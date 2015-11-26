@@ -23,22 +23,10 @@
 #include <map>
 #include "Vector.h"
 #include "Particle.h"
+#include "Button.h"
+#include "Simulation.h"
 
 using namespace std;
-
-typedef enum {
-    CUP,
-    SHOWER,
-    WATERFALL,
-    FUNNEL,
-    STIRRING
-} Simulation;
-
-struct Button {
-  Simulation buttonChange;
-  Vector bottomLeft;
-  Vector topRight;
-};
 
 GLFWwindow* menu;
 GLFWwindow* window;
@@ -147,7 +135,15 @@ void initStirring() {
 }
 
 void initButtons() {
+  buttons = vector<Button>();
 
+  double z = -1.0f;
+
+  buttons.push_back(Button(CUP, Vector(-1.0f, 0.9f, z), Vector(1.0f, 1.0f, z)));
+  buttons.push_back(Button(SHOWER, Vector(-1.0f, 0.8f, z), Vector(1.0f, 0.9f, z)));
+  buttons.push_back(Button(WATERFALL, Vector(-1.0f, 0.7f, z), Vector(1.0f, 0.8f, z)));
+  buttons.push_back(Button(FUNNEL, Vector(-1.0f, 0.6f, z), Vector(1.0f, 0.7f, z)));
+  buttons.push_back(Button(STIRRING, Vector(-1.0f, 0.5f, z), Vector(1.0f, 0.6f, z)));
 }
 
 void init() {
@@ -204,12 +200,29 @@ void render() {
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
   
-    for(unsigned int i = 0; i < particles.size(); i++) {
-        particles[i].render();
+    for(Particle p : particles) {
+        p.render();
     }
+
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+
+    glfwMakeContextCurrent(menu);
+
+    glViewport(0, 0, width, height);
+    glClear(GL_COLOR_BUFFER_BIT);
+        
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(fov, width/height, nearPlane, farPlane);
+
+    for(Button b : buttons)
+      b.render();
     
     glfwSwapBuffers(window);
     glfwPollEvents();
+
+    glfwMakeContextCurrent(window);
 }
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -255,6 +268,7 @@ int main(int argc, char **argv)
   glfwSetMouseButtonCallback(menu, mouseFunc);
 
 	init();
+  initButtons();
   
 	while(!glfwWindowShouldClose(window)) {
     while(simulate) {
