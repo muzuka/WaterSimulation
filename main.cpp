@@ -219,7 +219,7 @@ void render() {
     for(Button b : buttons)
       b.render();
     
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(menu);
     glfwPollEvents();
 
     glfwMakeContextCurrent(window);
