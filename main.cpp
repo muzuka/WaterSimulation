@@ -13,7 +13,7 @@
 #define _GLFW_HAS_GLXGETPROCADDRESS
 #define GLFW_INCLUDE_GLU
 #define GLFW_INCLUDE_GL_3
-
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
@@ -72,9 +72,8 @@ const char* fragmentShaderText =
   "#version 150"
   "out vec4 outColor;"
   "void main() {"
-    "outColor = vec4(1.0, 1.0, 1.0, 1.0);"
+    "outColor = vec4(0.372, 0.659, 1.0, 1.0);"
   "}";
-
 
 double kernel(Vector p) {
   double normalDistance = Vector::dotProduct(p, p) / (2 * sigma);
@@ -112,6 +111,14 @@ Vector accelDueToViscosity(int i) {
   for(int j = 0; j < numOfPoints; j++)
     result += ((particles[j].getVelocity() - particles[i].getVelocity()) / particles[j].getDensity()) * 0.1f * kernel(particles[j].getPosition() - particles[i].getPosition());
   return result / particles[i].getDensity();
+}
+
+vector<Vector> getParticlePositions() {
+  vector<Vector> positions = vector<Vector>();
+  for(int i = 0; i < numOfPoints; i++) {
+    positions.push_back(particles[i].getPosition());
+  }
+  return positions;
 }
 
 void initCup() {
@@ -192,6 +199,9 @@ void loadShaders() {
 
 void init() {
 
+    glewExperimental = GL_TRUE;
+    glewInit();
+
     particles = vector<Particle>();
 
     glPointSize(pointSize);
@@ -228,7 +238,6 @@ void init() {
     glGenVertexArrays(1, &particleVAO);
 
     glGenBuffers(1, &particleVBO);
-    glBufferData(GL_ARRAY_BUFFER, particles.size() * sizeof(Particle), &particles.front(), GL_STREAM_DRAW);
 }
 
 void update() {
@@ -245,7 +254,7 @@ void update() {
 }
 
 void render() {
-  
+
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT);
         
@@ -256,6 +265,10 @@ void render() {
     // for(Particle p : particles) {
     //     p.render();
     // }
+
+    vector<Vector> positions = getParticlePositions();
+
+    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(Vector), &positions.front(), GL_STREAM_DRAW);
 
     glBindVertexArray(particleVAO);
     glBindBuffer(GL_ARRAY_BUFFER, particleVBO);
@@ -307,10 +320,6 @@ int main(int argc, char **argv)
     cout << "glfw failed to initialize" << endl;
 		exit(EXIT_FAILURE);
 	}
-
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
 	window = glfwCreateWindow(width, height, "Test", NULL, NULL);
 	if(!window) {
@@ -321,7 +330,7 @@ int main(int argc, char **argv)
 
   menu = glfwCreateWindow(menuWidth, menuHeight, "Menu", NULL, NULL);
   if(!menu) {
-    cout << "Window failed to be created" << endl;
+    cout << "menu failed to be created" << endl;
     glfwTerminate();
     exit(EXIT_FAILURE);
   }
@@ -332,7 +341,7 @@ int main(int argc, char **argv)
 
 	init();
   initButtons();
-  
+
 	while(!glfwWindowShouldClose(window)) {
     while(simulate) {
       update();
