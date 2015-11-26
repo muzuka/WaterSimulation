@@ -12,6 +12,7 @@
 #define _GLFW_USE_OPENGL
 #define _GLFW_HAS_GLXGETPROCADDRESS
 #define GLFW_INCLUDE_GLU
+#define GLFW_INCLUDE_GL_3
 
 #include <GLFW/glfw3.h>
 
@@ -52,6 +53,27 @@ int width        = 1024;
 int height       = 760;
 int menuWidth    = 100;
 int menuHeight   = 500;
+
+//rendering
+unsigned int shaderProgram;
+unsigned int vertexShader;
+unsigned int fragShader;
+unsigned int particleVBO;
+unsigned int particleVAO;
+int positionInfo;
+const char* vertexShaderText =
+  "#version 150"
+  "in vec3 position;"
+  "void main() {"
+
+    "gl_position = vec4(positon, 1.0);"
+  "}";
+const char* fragmentShaderText =
+  "#version 150"
+  "out vec4 outColor;"
+  "void main() {"
+    "outColor = vec4(1.0, 1.0, 1.0, 1.0);"
+  "}";
 
 
 double kernel(Vector p) {
@@ -137,13 +159,35 @@ void initStirring() {
 void initButtons() {
   buttons = vector<Button>();
 
-  double z = -1.0f;
+  double z = 0.0f;
 
   buttons.push_back(Button(CUP, Vector(-1.0f, 0.9f, z), Vector(1.0f, 1.0f, z)));
   buttons.push_back(Button(SHOWER, Vector(-1.0f, 0.8f, z), Vector(1.0f, 0.9f, z)));
   buttons.push_back(Button(WATERFALL, Vector(-1.0f, 0.7f, z), Vector(1.0f, 0.8f, z)));
   buttons.push_back(Button(FUNNEL, Vector(-1.0f, 0.6f, z), Vector(1.0f, 0.7f, z)));
   buttons.push_back(Button(STIRRING, Vector(-1.0f, 0.5f, z), Vector(1.0f, 0.6f, z)));
+}
+
+void attachShaders(unsigned int vs, unsigned int fs) {
+  shaderProgram = glCreateProgram();
+  glAttachShader(shaderProgram, vs);
+  glAttachShader(shaderProgram, fs);
+}
+
+void loadShaders() {
+  vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertexShader, 1, &vertexShaderText, NULL);
+  glCompileShader(vertexShader);
+
+  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragShader, 1, &fragmentShaderText, NULL);
+  glCompileShader(fragShader);
+
+  attachShaders(vertexShader, fragShader);
+
+  glBindFragDataLocation(shaderProgram, 0, "outColor");
+
+  glLinkProgram(shaderProgram);
 }
 
 void init() {
@@ -176,6 +220,15 @@ void init() {
         default:
           break;
     }
+
+    positionInfo = glGetAttribLocation(shaderProgram, "position");
+    glVertexAttribPointer(positionInfo, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionInfo);
+
+    glGenVertexArrays(1, &particleVAO);
+
+    glGenBuffers(1, &particleVBO);
+    glBufferData(GL_ARRAY_BUFFER, particles.size() * sizeof(Particle), &particles.front(), GL_STREAM_DRAW);
 }
 
 void update() {
@@ -200,9 +253,14 @@ void render() {
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
   
-    for(Particle p : particles) {
-        p.render();
-    }
+    // for(Particle p : particles) {
+    //     p.render();
+    // }
+
+    glBindVertexArray(particleVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, particleVBO);
+
+    glDrawArrays(GL_POINTS, 0, particles.size());
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -214,10 +272,11 @@ void render() {
         
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(fov, width/height, nearPlane, farPlane);
+    //gluPerspective(fov, width/height, nearPlane, farPlane);
+    glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
 
     for(Button b : buttons)
-      b.render();
+      b.renderBuffer();
     
     glfwSwapBuffers(menu);
     glfwPollEvents();
@@ -248,6 +307,10 @@ int main(int argc, char **argv)
     cout << "glfw failed to initialize" << endl;
 		exit(EXIT_FAILURE);
 	}
+
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
 	window = glfwCreateWindow(width, height, "Test", NULL, NULL);
 	if(!window) {
