@@ -14,22 +14,26 @@
 #define GLFW_INCLUDE_GLU
 #include <GLFW/glfw3.h>
 
+#include <string.h>
 #include "Simulation.h"
 #include "Vector.h"
 
 class Button {
 
 private:
+  unsigned int vbo;
   Simulation buttonChange;
   Vector bottomLeft;
   Vector topRight;
   double width;
   double height;
+  double vertices[];
 
 public:
 	Button(Simulation, Vector, Vector);
 
 	void render();
+	void renderBuffer();
 
 };
 

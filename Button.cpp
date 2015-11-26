@@ -12,6 +12,17 @@ Button::Button(Simulation s, Vector bl, Vector tr) {
 	topRight = tr;
 	width = fabs(bl.getX() - tr.getX());
 	height = fabs(bl.getY() - tr.getY());
+
+	double vertices[] = {
+		bl.getX(), bl.getY(), bl.getZ(),
+		bl.getX(), bl.getY() + height, bl.getZ(),
+		bl.getX() + width, bl.getY(), bl.getZ(),
+		tr.getX(), tr.getY(), tr.getZ()
+	};
+
+	memcpy(&this->vertices, &vertices, sizeof(vertices));
+
+	glGenBuffers(1, &vbo);
 }
 
 void Button::render() {
@@ -22,4 +33,11 @@ void Button::render() {
 	glVertex3f(bottomLeft.getX() + width, bottomLeft.getY(), bottomLeft.getZ());
 	glVertex3f(topRight.getX(), topRight.getY(), topRight.getZ());
 	glEnd();
+}
+
+void Button::renderBuffer() {
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 12, vertices, GL_STATIC_DRAW);
+
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 12);
 }
