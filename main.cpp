@@ -34,9 +34,17 @@ typedef enum {
     STIRRING
 } Simulation;
 
+struct Button {
+  Simulation buttonChange;
+  Vector bottomLeft;
+  Vector topRight;
+};
+
+GLFWwindow* menu;
 GLFWwindow* window;
 
 vector<Particle> particles;
+vector<Button> buttons;
 
 Simulation sim    = SHOWER;
 int pointHeight   = 5;
@@ -54,6 +62,8 @@ double farPlane  = 100.0f;
 double fov       = 60.0f;
 int width        = 1024;
 int height       = 760;
+int menuWidth    = 100;
+int menuHeight   = 500;
 
 
 double kernel(Vector p) {
@@ -112,7 +122,7 @@ void initWaterfall() {
   for(int i = 0; i < pointWidth; i++) {
     for(int j = 0; j < pointHeight; j++) {
       for(int k = 0; k < pointDepth; k++) {
-        particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -(k/10.0f))));
+        particles.push_back(Particle(Vector(i/10.0f, 0.9f + (j/10.0f), -2.0f - (k/10.0f))));
       }
     }
   }
@@ -130,10 +140,14 @@ void initStirring() {
   for(int i = 0; i < pointWidth; i++) {
     for(int j = 0; j < pointHeight; j++) {
       for(int k = 0; k < pointDepth; k++) {
-        particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -(k/10.0f))));
+        particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -2.0f - (k/10.0f))));
       } 
     }
   }
+}
+
+void initButtons() {
+
 }
 
 void init() {
@@ -207,6 +221,13 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
   }
 }
 
+void mouseFunc(GLFWwindow* window, int button, int action, int mods) {
+  if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+    double x, y;
+    glfwGetCursorPos(menu, &x, &y);
+  }
+}
+
 int main(int argc, char **argv)
 {
 
@@ -221,9 +242,17 @@ int main(int argc, char **argv)
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
+
+  menu = glfwCreateWindow(menuWidth, menuHeight, "Menu", NULL, NULL);
+  if(!menu) {
+    cout << "Window failed to be created" << endl;
+    glfwTerminate();
+    exit(EXIT_FAILURE);
+  }
   
 	glfwMakeContextCurrent(window);
   glfwSetKeyCallback(window, keyboardFunc);
+  glfwSetMouseButtonCallback(menu, mouseFunc);
 
 	init();
   
@@ -235,6 +264,7 @@ int main(int argc, char **argv)
     render();
   }
   
+  glfwDestroyWindow(menu);
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	
