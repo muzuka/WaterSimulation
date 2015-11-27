@@ -12,6 +12,7 @@
 #define _GLFW_USE_OPENGL
 #define _GLFW_HAS_GLXGETPROCADDRESS
 #define GLFW_INCLUDE_GLU
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <string.h>
