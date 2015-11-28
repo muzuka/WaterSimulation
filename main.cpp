@@ -55,6 +55,7 @@ int menuWidth    = 100;
 int menuHeight   = 500;
 
 //rendering
+GLenum       glError;
 unsigned int shaderProgram;
 unsigned int vertexShader;
 unsigned int fragShader;
@@ -62,23 +63,42 @@ unsigned int particleVBO;
 unsigned int particleVAO;
 int positionInfo;
 const char* vertexShaderText =
-  "#version 150"
-  "in vec3 position;"
+  "#version 120\n"
+  "varying vec3 position;"
   "void main() {"
 
-    "gl_position = vec4(positon, 1.0);"
+    "gl_Position = vec4(position, 1.0);"
   "}";
 const char* fragmentShaderText =
-  "#version 150"
-  "out vec4 outColor;"
+  "#version 120\n"
   "void main() {"
-    "outColor = vec4(0.372, 0.659, 1.0, 1.0);"
+    "gl_FragColor = vec4(0.372, 0.659, 1.0, 1.0);"
   "}";
 
-void cleanUp() {
-  glfwDestroyWindow(menu);
-  glfwDestroyWindow(window);
-  glfwTerminate();
+void checkForError(const char* func) {
+  glError = glGetError();
+  if(glError != GL_NO_ERROR) {
+    switch(glError) {
+      case GL_INVALID_ENUM:
+        cout << "invalid enum: " << func << endl;
+        break;
+      case GL_INVALID_VALUE:
+        cout << "invalid value: " << func << endl;
+        break;
+      case GL_INVALID_OPERATION:
+        cout << "invalid operation: " << func << endl;
+        break;
+      case GL_INVALID_FRAMEBUFFER_OPERATION:
+        cout << "invalid framebuffer operation: " << func << endl;
+        break;
+      case GL_OUT_OF_MEMORY:
+        cout << "Out of memory: " << func << endl;
+        break;
+      default:
+        cout << "something else: " << func << endl;
+        break;
+    }
+  }
 }
 
 double kernel(Vector p) {
@@ -128,6 +148,18 @@ vector<Vector> getParticlePositions() {
     positions.push_back(particles[i].getPosition());
   }
   return positions;
+}
+
+void cleanUp() {
+  glDeleteProgram(shaderProgram);
+  glDeleteShader(fragShader);
+  glDeleteShader(vertexShader);
+  glDeleteBuffers(1, &particleVBO);
+  glDeleteVertexArrays(1, &particleVAO);
+
+  glfwDestroyWindow(menu);
+  glfwDestroyWindow(window);
+  glfwTerminate();
 }
 
 void initCup() {
@@ -200,7 +232,9 @@ void loadShaders() {
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
   if(!status) {
     glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
+    cout << "Vertex Shader:" << endl;
     cout << buffer << endl;
+    cleanUp();
     exit(EXIT_FAILURE);
   }
 
@@ -211,14 +245,20 @@ void loadShaders() {
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
   if(!status) {
     glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
+    cout << "Fragment Shader:" << endl;
     cout << buffer << endl;
+    cleanUp();
+    exit(EXIT_FAILURE);
   }
 
   attachShaders(vertexShader, fragShader);
 
-  glBindFragDataLocation(shaderProgram, 0, "outColor");
+  //glBindFragDataLocation(shaderProgram, 0, "outColor");
 
   glLinkProgram(shaderProgram);
+  checkForError("glLinkProgram");
+
+  glUseProgram(shaderProgram);
 }
 
 void init() {
@@ -227,6 +267,7 @@ void init() {
     GLenum err = glewInit();
     if(GLEW_OK != err) {
       cout << "glew failed" << endl;
+      cleanUp();
       exit(EXIT_FAILURE); 
     }
 
@@ -259,13 +300,20 @@ void init() {
           break;
     }
 
+    loadShaders();
+
     positionInfo = glGetAttribLocation(shaderProgram, "position");
+    checkForError("glGetAttribLocation");
     glVertexAttribPointer(positionInfo, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    checkForError("glVertexAttribPointer");
     glEnableVertexAttribArray(positionInfo);
+    checkForError("glEnableVertexAttribArray");
 
     glGenVertexArrays(1, &particleVAO);
+    checkForError("glGenVertexArrays");
 
     glGenBuffers(1, &particleVBO);
+    checkForError("glGenBuffers");
     
 }
 
@@ -290,10 +338,6 @@ void render() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
-  
-    // for(Particle p : particles) {
-    //     p.render();
-    // }
 
     vector<Vector> positions = getParticlePositions();
 
@@ -307,7 +351,7 @@ void render() {
     glfwSwapBuffers(window);
     glfwPollEvents();
 
-    glfwMakeContextCurrent(menu);
+    /*glfwMakeContextCurrent(menu);
 
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -323,7 +367,7 @@ void render() {
     glfwSwapBuffers(menu);
     glfwPollEvents();
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(window);*/
 }
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -354,12 +398,8 @@ int main(int argc, char **argv)
     cout << "glfw failed to initialize" << endl;
 		exit(EXIT_FAILURE);
 	}
-  
-  /*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);*/
 	
-	window = glfwCreateWindow(width, height, "Test", NULL, NULL);
+	window = glfwCreateWindow(width, height, "SPH Simulation", NULL, NULL);
 	if(!window) {
     cout << "Window failed to be created" << endl;
 		glfwTerminate();
