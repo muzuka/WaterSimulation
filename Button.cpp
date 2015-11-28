@@ -37,7 +37,7 @@ void Button::render() {
 
 void Button::renderBuffer() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 12, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 12);
 }
