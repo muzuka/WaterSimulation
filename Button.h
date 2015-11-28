@@ -28,7 +28,7 @@ private:
   Vector topRight;
   double width;
   double height;
-  double vertices[];
+  double vertices[12];
 
 public:
 	Button(Simulation, Vector, Vector);
