@@ -75,6 +75,12 @@ const char* fragmentShaderText =
     "outColor = vec4(0.372, 0.659, 1.0, 1.0);"
   "}";
 
+void cleanUp() {
+  glfwDestroyWindow(menu);
+  glfwDestroyWindow(window);
+  glfwTerminate();
+}
+
 double kernel(Vector p) {
   double normalDistance = Vector::dotProduct(p, p) / (2 * sigma);
   if(normalDistance > 50)
@@ -184,13 +190,29 @@ void attachShaders(unsigned int vs, unsigned int fs) {
 }
 
 void loadShaders() {
+  int status;
+  char buffer[512];
+
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertexShaderText, NULL);
   glCompileShader(vertexShader);
 
+  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+  if(!status) {
+    glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
+    cout << buffer << endl;
+    exit(EXIT_FAILURE);
+  }
+
   fragShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragShader, 1, &fragmentShaderText, NULL);
   glCompileShader(fragShader);
+
+  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+  if(!status) {
+    glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
+    cout << buffer << endl;
+  }
 
   attachShaders(vertexShader, fragShader);
 
@@ -333,9 +355,9 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
   
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  /*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);*/
 	
 	window = glfwCreateWindow(width, height, "Test", NULL, NULL);
 	if(!window) {
@@ -367,9 +389,7 @@ int main(int argc, char **argv)
     render();
   }
   
-  glfwDestroyWindow(menu);
-	glfwDestroyWindow(window);
-	glfwTerminate();
+  cleanUp();
 	
 	return 0;
 }
