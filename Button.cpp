@@ -13,14 +13,14 @@ Button::Button(Simulation s, Vector bl, Vector tr) {
 	width = fabs(bl.getX() - tr.getX());
 	height = fabs(bl.getY() - tr.getY());
 
-	double vertices[] = {
+	double tempvertices[] = {
 		bl.getX(), bl.getY(), bl.getZ(),
 		bl.getX(), bl.getY() + height, bl.getZ(),
 		bl.getX() + width, bl.getY(), bl.getZ(),
 		tr.getX(), tr.getY(), tr.getZ()
 	};
 
-	memcpy(&this->vertices, &vertices, sizeof(vertices));
+	memcpy(&vertices, &tempvertices, sizeof(tempvertices));
 
 	glGenBuffers(1, &vbo);
 }
