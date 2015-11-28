@@ -90,8 +90,11 @@ Vector kernelGradient(Vector p) {
 
 double density(int i) {
   double result = 0.0f;
-  for(int j = 0; j < numOfPoints; j++)
+  for(int j = 0; j < numOfPoints; j++) {
+    cout << "accessing " << i << " and " << j << endl;
     result += kernel(particles[i].getPosition() - particles[j].getPosition());
+  }
+  cout << "set Density" << endl;
   return result;
 }
 
@@ -130,9 +133,8 @@ void initCup() {
 }
 
 void initShower() {
-  for(int i = 0; i < pointWidth; i++) {
+  for(int i = 0; i < pointWidth; i++)
       particles.push_back(Particle(Vector(i/10.0f, 0.9f, -2.0f)));
-  }
 }
 
 void initWaterfall() {
@@ -200,7 +202,11 @@ void loadShaders() {
 void init() {
 
     glewExperimental = GL_TRUE;
-    glewInit();
+    GLenum err = glewInit();
+    if(GLEW_OK != err) {
+      cout << "glew failed" << endl;
+      exit(EXIT_FAILURE); 
+    }
 
     particles = vector<Particle>();
 
@@ -238,6 +244,7 @@ void init() {
     glGenVertexArrays(1, &particleVAO);
 
     glGenBuffers(1, &particleVBO);
+    
 }
 
 void update() {
@@ -313,13 +320,22 @@ void mouseFunc(GLFWwindow* window, int button, int action, int mods) {
   }
 }
 
+void errorFunc(int error, const char* description) {
+  cout << description << endl;
+}
+
 int main(int argc, char **argv)
 {
 
+  glfwSetErrorCallback(errorFunc);
 	if(!glfwInit()) {
     cout << "glfw failed to initialize" << endl;
 		exit(EXIT_FAILURE);
 	}
+  
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
 	window = glfwCreateWindow(width, height, "Test", NULL, NULL);
 	if(!window) {
@@ -342,6 +358,7 @@ int main(int argc, char **argv)
 	init();
   initButtons();
 
+  cout << "about to start loop" << endl;
 	while(!glfwWindowShouldClose(window)) {
     while(simulate) {
       update();
