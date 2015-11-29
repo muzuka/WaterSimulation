@@ -64,10 +64,8 @@ unsigned int particleVAO;
 int positionInfo;
 const char* vertexShaderText =
   "#version 120\n"
-  "varying vec3 position;"
   "void main() {"
-
-    "gl_Position = vec4(position, 1.0);"
+    "gl_Position = gl_Vertex;"
   "}";
 const char* fragmentShaderText =
   "#version 120\n"
@@ -242,9 +240,9 @@ void loadShaders() {
   glShaderSource(fragShader, 1, &fragmentShaderText, NULL);
   glCompileShader(fragShader);
 
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+  glGetShaderiv(fragShader, GL_COMPILE_STATUS, &status);
   if(!status) {
-    glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
+    glGetShaderInfoLog(fragShader, 512, NULL, buffer);
     cout << "Fragment Shader:" << endl;
     cout << buffer << endl;
     cleanUp();
@@ -259,6 +257,7 @@ void loadShaders() {
   checkForError("glLinkProgram");
 
   glUseProgram(shaderProgram);
+  checkForError("glUseProgram");
 }
 
 void init() {
@@ -302,9 +301,11 @@ void init() {
 
     loadShaders();
 
-    positionInfo = glGetAttribLocation(shaderProgram, "position");
-    checkForError("glGetAttribLocation");
-    glVertexAttribPointer(positionInfo, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    /*glBindAttribLocation(shaderProgram, 2, "position");
+    //positionInfo = glGetAttribLocation(shaderProgram, "position");
+    checkForError("glBindAttribLocation");
+    cout << "position info = " << positionInfo << endl;
+    glVertexAttribPointer(2, 3, GL_DOUBLE, GL_FALSE, 0, 0);
     checkForError("glVertexAttribPointer");
     glEnableVertexAttribArray(positionInfo);
     checkForError("glEnableVertexAttribArray");
@@ -313,7 +314,7 @@ void init() {
     checkForError("glGenVertexArrays");
 
     glGenBuffers(1, &particleVBO);
-    checkForError("glGenBuffers");
+    checkForError("glGenBuffers");*/
     
 }
 
@@ -339,19 +340,26 @@ void render() {
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
 
-    vector<Vector> positions = getParticlePositions();
+    for(Particle p : particles)
+      p.render();
+
+    /*vector<Vector> positions = getParticlePositions();
 
     glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(Vector), &positions.front(), GL_STREAM_DRAW);
+    //checkForError("glBufferData");
 
     glBindVertexArray(particleVAO);
+    //checkForError("glBindVertexArray");
     glBindBuffer(GL_ARRAY_BUFFER, particleVBO);
+    //checkForError("glBindBuffer");
 
     glDrawArrays(GL_POINTS, 0, particles.size());
+    //checkForError("glDrawArrays");*/
 
     glfwSwapBuffers(window);
     glfwPollEvents();
 
-    /*glfwMakeContextCurrent(menu);
+    glfwMakeContextCurrent(menu);
 
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -362,12 +370,12 @@ void render() {
     glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
 
     for(Button b : buttons)
-      b.renderBuffer();
+      b.render();
     
     glfwSwapBuffers(menu);
     glfwPollEvents();
 
-    glfwMakeContextCurrent(window);*/
+    glfwMakeContextCurrent(window);
 }
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods) {
