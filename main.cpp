@@ -299,7 +299,7 @@ void init() {
           break;
     }
 
-    loadShaders();
+    //loadShaders();
 
     /*glBindAttribLocation(shaderProgram, 2, "position");
     //positionInfo = glGetAttribLocation(shaderProgram, "position");
