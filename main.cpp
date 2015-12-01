@@ -83,6 +83,7 @@ const char* buttonVertShaderText =
   
 const char* buttonFragShaderText =
   "#version 120\n"
+  "uniform vec3 color;"
   "void main() {"
   "gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);"
   "}";
@@ -220,10 +221,15 @@ void initButtons() {
   double top = -0.5f;
 
   buttons.push_back(Button(CUP, Vector(-1.0f, top - 0.1f, z), Vector(1.0f, top, z)));
+  buttons[0].setColor(Vector(1.0f, 0.0f, 0.0f));
   buttons.push_back(Button(SHOWER, Vector(-1.0f, top - 0.2f, z), Vector(1.0f, top - 0.1f, z)));
+  buttons[0].setColor(Vector(0.0f, 1.0f, 0.0f));
   buttons.push_back(Button(WATERFALL, Vector(-1.0f, top - 0.3f, z), Vector(1.0f, top - 0.2f, z)));
+  buttons[0].setColor(Vector(0.0f, 0.0f, 1.0f));
   buttons.push_back(Button(FUNNEL, Vector(-1.0f, top - 0.4f, z), Vector(1.0f, top - 0.3f, z)));
+  buttons[0].setColor(Vector(1.0f, 1.0f, 0.0f));
   buttons.push_back(Button(STIRRING, Vector(-1.0f, top - 0.5f, z), Vector(1.0f, top - 0.4f, z)));
+  buttons[0].setColor(Vector(1.0f, 0.0f, 1.0f));
 }
 
 void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
@@ -331,7 +337,6 @@ void update() {
     if(debug) {
       cout << i << ": acceleration ";
       particles[i].getAcceleration().print();
-      printf("pressure acceleration ");
       cout << "pressure acceleration ";
       accPressure.print();
       cout << "viscosity acceleration ";
@@ -374,10 +379,17 @@ void render() {
     glLoadIdentity();
     glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
     
+    int colorUniformLoc = glGetUniformLocation(buttonShaderProgram, "color");
+    
+    
+    
+    
     glUseProgram(buttonShaderProgram);
 
-    for(Button b : buttons)
+    for(Button b : buttons) {
+      glUniform3f(colorUniformLoc, b.getColor().getX(), b.getColor().getY(), b.getColor().getZ());
       b.render();
+    }
     
     glfwSwapBuffers(menu);
     glfwPollEvents();
