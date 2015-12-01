@@ -58,6 +58,7 @@ int menuHeight   = 500;
 //rendering
 GLenum       glError;
 unsigned int shaderProgram;
+unsigned int buttonShaderProgram;
 unsigned int vertexShader;
 unsigned int fragShader;
 unsigned int particleVBO;
@@ -72,6 +73,18 @@ const char* fragmentShaderText =
   "#version 120\n"
   "void main() {"
     "gl_FragColor = vec4(0.372, 0.659, 1.0, 1.0);"
+  "}";
+  
+const char* buttonVertShaderText = 
+  "#version 120\n"
+  "void main() {"
+  "gl_Position = gl_Vertex"
+  "}";
+  
+const char* buttonFragShaderText =
+  "#version 120\n"
+  "void main() {"
+  "gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);"
   "}";
 
 void checkForError(const char* func) {
@@ -218,12 +231,13 @@ void attachShaders(unsigned int vs, unsigned int fs) {
   glAttachShader(shaderProgram, fs);
 }
 
-void loadShaders() {
+unsigned int loadShaders(const char* vertex, const char* fragment) {
+  unsigned int tempProgram;
   int status;
   char buffer[512];
 
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexShaderText, NULL);
+  glShaderSource(vertexShader, 1, &vertex, NULL);
   glCompileShader(vertexShader);
 
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
@@ -236,7 +250,7 @@ void loadShaders() {
   }
 
   fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragShader, 1, &fragmentShaderText, NULL);
+  glShaderSource(fragShader, 1, &fragment, NULL);
   glCompileShader(fragShader);
 
   glGetShaderiv(fragShader, GL_COMPILE_STATUS, &status);
@@ -250,13 +264,10 @@ void loadShaders() {
 
   attachShaders(vertexShader, fragShader);
 
-  //glBindFragDataLocation(shaderProgram, 0, "outColor");
-
-  glLinkProgram(shaderProgram);
+  glLinkProgram(tempProgram);
   checkForError("glLinkProgram");
 
-  glUseProgram(shaderProgram);
-  checkForError("glUseProgram");
+  return tempProgram;
 }
 
 void init() {
@@ -298,7 +309,8 @@ void init() {
           break;
     }
 
-    //loadShaders();
+    shaderProgram = loadShaders(vertexShaderText, fragmentShaderText);
+    buttonShaderProgram = loadShaders(buttonVertShaderText, buttonFragShaderText);
 
     /*glBindAttribLocation(shaderProgram, 2, "position");
     //positionInfo = glGetAttribLocation(shaderProgram, "position");
@@ -358,6 +370,8 @@ void render() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
+    
+    glUseProgram(shaderProgram);
 
     for(Particle p : particles)
       p.render();
@@ -387,6 +401,8 @@ void render() {
     glLoadIdentity();
     //gluPerspective(fov, width/height, nearPlane, farPlane);
     glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
+    
+    glUseProgram(buttonShaderProgram);
 
     for(Button b : buttons)
       b.render();
