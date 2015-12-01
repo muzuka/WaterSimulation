@@ -32,6 +32,7 @@ void Button::render() {
 	glVertex3f(bottomLeft.getX(), bottomLeft.getY() + height, bottomLeft.getZ());
 	glVertex3f(bottomLeft.getX() + width, bottomLeft.getY(), bottomLeft.getZ());
 	glVertex3f(topRight.getX(), topRight.getY(), topRight.getZ());
+  glVertex3f(bottomLeft.getX(), bottomLeft.getY(), bottomLeft.getZ());
 	glEnd();
 }
 
