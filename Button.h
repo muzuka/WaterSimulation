@@ -34,6 +34,9 @@ private:
 public:
 	Button(Simulation, Vector, Vector);
 
+  Vector getColor();
+  void setColor(Vector);
+
 	void render();
 	void renderBuffer();
 

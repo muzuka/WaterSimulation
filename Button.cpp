@@ -25,7 +25,16 @@ Button::Button(Simulation s, Vector bl, Vector tr) {
 	glGenBuffers(1, &vbo);
 }
 
+Vector Button::getColor() {
+  return color;
+}
+
+void Button::setColor(Vector c) {
+  color = c;
+}
+
 void Button::render() {
+  
 	glBegin(GL_TRIANGLE_FAN);
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glVertex3f(bottomLeft.getX(), bottomLeft.getY(), bottomLeft.getZ());
