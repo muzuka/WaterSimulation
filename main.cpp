@@ -330,14 +330,15 @@ void update() {
     Vector accPressure = accelDueToPressure(i);
     Vector accViscosity = accelDueToViscosity(i);
     particles[i].setAcceleration(accPressure + accViscosity + gravity);
-    if(debug) {
-      cout << i << ": acceleration ";
-      particles[i].getAcceleration().print();
-      cout << "pressure acceleration ";
-      accPressure.print();
-      cout << "viscosity acceleration ";
-      accViscosity.print();
-    }
+    //if(debug) {
+      //cout << i << ": acceleration ";
+      //particles[i].getAcceleration().print();
+      //printf("pressure acceleration ");
+      //cout << "pressure acceleration ";
+      //accPressure.print();
+      //cout << "viscosity acceleration ";
+      //accViscosity.print();
+    //}
   }
   for(int i = 0; i < numOfPoints; i++) {
     particles[i].setVelocity(particles[i].getVelocity() + (particles[i].getAcceleration() * timeStep));
@@ -450,7 +451,7 @@ int main(int argc, char **argv)
 
   cout << "about to start loop" << endl;
 	while(!glfwWindowShouldClose(window)) {
-    while(simulate) {
+    if(simulate) {
       update();
     }
 
