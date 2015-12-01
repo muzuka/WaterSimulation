@@ -26,6 +26,7 @@ private:
   Simulation buttonChange;
   Vector bottomLeft;
   Vector topRight;
+  Vector color;
   double width;
   double height;
   double vertices[12];
