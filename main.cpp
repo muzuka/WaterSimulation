@@ -35,7 +35,7 @@ GLFWwindow* window;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = SHOWER;
+Simulation sim    = WATERFALL;
 int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
@@ -53,7 +53,7 @@ double fov       = 60.0f;
 int width        = 1024;
 int height       = 760;
 int menuWidth    = 100;
-int menuHeight   = 500;
+int menuHeight   = 250;
 
 //rendering
 GLenum       glError;
@@ -67,7 +67,7 @@ int positionInfo;
 const char* vertexShaderText =
   "#version 120\n"
   "void main() {"
-    "gl_Position = gl_Vertex;"
+    "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
   "}";
 const char* fragmentShaderText =
   "#version 120\n"
@@ -78,7 +78,7 @@ const char* fragmentShaderText =
 const char* buttonVertShaderText = 
   "#version 120\n"
   "void main() {"
-  "gl_Position = gl_Vertex"
+  "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
   "}";
   
 const char* buttonFragShaderText =
@@ -217,18 +217,19 @@ void initButtons() {
   buttons = vector<Button>();
 
   double z = 0.0f;
+  double top = -0.5f;
 
-  buttons.push_back(Button(CUP, Vector(-1.0f, 0.9f, z), Vector(1.0f, 1.0f, z)));
-  buttons.push_back(Button(SHOWER, Vector(-1.0f, 0.8f, z), Vector(1.0f, 0.9f, z)));
-  buttons.push_back(Button(WATERFALL, Vector(-1.0f, 0.7f, z), Vector(1.0f, 0.8f, z)));
-  buttons.push_back(Button(FUNNEL, Vector(-1.0f, 0.6f, z), Vector(1.0f, 0.7f, z)));
-  buttons.push_back(Button(STIRRING, Vector(-1.0f, 0.5f, z), Vector(1.0f, 0.6f, z)));
+  buttons.push_back(Button(CUP, Vector(-1.0f, top - 0.1f, z), Vector(1.0f, top, z)));
+  buttons.push_back(Button(SHOWER, Vector(-1.0f, top - 0.2f, z), Vector(1.0f, top - 0.1f, z)));
+  buttons.push_back(Button(WATERFALL, Vector(-1.0f, top - 0.3f, z), Vector(1.0f, top - 0.2f, z)));
+  buttons.push_back(Button(FUNNEL, Vector(-1.0f, top - 0.4f, z), Vector(1.0f, top - 0.3f, z)));
+  buttons.push_back(Button(STIRRING, Vector(-1.0f, top - 0.5f, z), Vector(1.0f, top - 0.4f, z)));
 }
 
-void attachShaders(unsigned int vs, unsigned int fs) {
-  shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vs);
-  glAttachShader(shaderProgram, fs);
+void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
+  *shaderProg = glCreateProgram();
+  glAttachShader(*shaderProg, vs);
+  glAttachShader(*shaderProg, fs);
 }
 
 unsigned int loadShaders(const char* vertex, const char* fragment) {
@@ -262,7 +263,7 @@ unsigned int loadShaders(const char* vertex, const char* fragment) {
     exit(EXIT_FAILURE);
   }
 
-  attachShaders(vertexShader, fragShader);
+  attachShaders(vertexShader, fragShader, &tempProgram);
 
   glLinkProgram(tempProgram);
   checkForError("glLinkProgram");
