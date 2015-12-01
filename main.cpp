@@ -40,9 +40,10 @@ int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
 int numOfPoints   = 10;
-bool   simulate   = false;
+bool simulate     = false;
+bool debug        = false;
 double sigma      = 0.42f;
-Vector gravity    = Vector(0.0f, -0.001f, 0.0f);
+Vector gravity    = Vector(0.0f, -0.01f, 0.0f);
 
 double timeStep  = 1.0f;
 double pointSize = 10.0f;
@@ -115,10 +116,8 @@ Vector kernelGradient(Vector p) {
 double density(int i) {
   double result = 0.0f;
   for(int j = 0; j < numOfPoints; j++) {
-    cout << "accessing " << i << " and " << j << endl;
     result += kernel(particles[i].getPosition() - particles[j].getPosition());
   }
-  cout << "set Density" << endl;
   return result;
 }
 
@@ -299,7 +298,7 @@ void init() {
           break;
     }
 
-    loadShaders();
+    //loadShaders();
 
     /*glBindAttribLocation(shaderProgram, 2, "position");
     //positionInfo = glGetAttribLocation(shaderProgram, "position");
@@ -320,14 +319,33 @@ void init() {
 
 void update() {
   for(int i = 0; i < numOfPoints; i++) {
-    particles[i].setDensity(i);
-    particles[i].setPressure(i);
+    particles[i].setDensity(density(i));
+    particles[i].setPressure(pressure(i));
+    if(debug) {
+      cout << "density: " << particles[i].getDensity() << endl;
+      cout << "pressure: " << particles[i].getPressure() << endl;
+    }
   }
-  for(int i = 0; i < numOfPoints; i++)
-    particles[i].setAcceleration(accelDueToPressure(i) + accelDueToViscosity(i) + gravity);
+  for(int i = 0; i < numOfPoints; i++) {
+    Vector accPressure = accelDueToPressure(i);
+    Vector accViscosity = accelDueToViscosity(i);
+    particles[i].setAcceleration(accPressure + accViscosity + gravity);
+    if(debug) {
+      cout << i << ": acceleration ";
+      particles[i].getAcceleration().print();
+      cout << "pressure acceleration ";
+      accPressure.print();
+      cout << "viscosity acceleration ";
+      accViscosity.print();
+    }
+  }
   for(int i = 0; i < numOfPoints; i++) {
     particles[i].setVelocity(particles[i].getVelocity() + (particles[i].getAcceleration() * timeStep));
     particles[i].setPosition(particles[i].getPosition() + (particles[i].getVelocity() * timeStep));
+    if(debug) {
+      cout << i << ": velocity ";
+      particles[i].getVelocity().print();
+    }
   }
 }
 
@@ -384,6 +402,8 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
       update();
     if(key == GLFW_KEY_SPACE)
       simulate = !simulate;
+    if(key == GLFW_KEY_D)
+      debug = !debug;
   }
 }
 
