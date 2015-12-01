@@ -312,21 +312,6 @@ void init() {
 
     shaderProgram = loadShaders(vertexShaderText, fragmentShaderText);
     buttonShaderProgram = loadShaders(buttonVertShaderText, buttonFragShaderText);
-
-    /*glBindAttribLocation(shaderProgram, 2, "position");
-    //positionInfo = glGetAttribLocation(shaderProgram, "position");
-    checkForError("glBindAttribLocation");
-    cout << "position info = " << positionInfo << endl;
-    glVertexAttribPointer(2, 3, GL_DOUBLE, GL_FALSE, 0, 0);
-    checkForError("glVertexAttribPointer");
-    glEnableVertexAttribArray(positionInfo);
-    checkForError("glEnableVertexAttribArray");
-
-    glGenVertexArrays(1, &particleVAO);
-    checkForError("glGenVertexArrays");
-
-    glGenBuffers(1, &particleVBO);
-    checkForError("glGenBuffers");*/
     
 }
 
@@ -343,15 +328,15 @@ void update() {
     Vector accPressure = accelDueToPressure(i);
     Vector accViscosity = accelDueToViscosity(i);
     particles[i].setAcceleration(accPressure + accViscosity + gravity);
-    //if(debug) {
-      //cout << i << ": acceleration ";
-      //particles[i].getAcceleration().print();
-      //printf("pressure acceleration ");
-      //cout << "pressure acceleration ";
-      //accPressure.print();
-      //cout << "viscosity acceleration ";
-      //accViscosity.print();
-    //}
+    if(debug) {
+      cout << i << ": acceleration ";
+      particles[i].getAcceleration().print();
+      printf("pressure acceleration ");
+      cout << "pressure acceleration ";
+      accPressure.print();
+      cout << "viscosity acceleration ";
+      accViscosity.print();
+    }
   }
   for(int i = 0; i < numOfPoints; i++) {
     particles[i].setVelocity(particles[i].getVelocity() + (particles[i].getAcceleration() * timeStep));
@@ -377,19 +362,6 @@ void render() {
     for(Particle p : particles)
       p.render();
 
-    /*vector<Vector> positions = getParticlePositions();
-
-    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(Vector), &positions.front(), GL_STREAM_DRAW);
-    //checkForError("glBufferData");
-
-    glBindVertexArray(particleVAO);
-    //checkForError("glBindVertexArray");
-    glBindBuffer(GL_ARRAY_BUFFER, particleVBO);
-    //checkForError("glBindBuffer");
-
-    glDrawArrays(GL_POINTS, 0, particles.size());
-    //checkForError("glDrawArrays");*/
-
     glfwSwapBuffers(window);
     glfwPollEvents();
 
@@ -400,7 +372,6 @@ void render() {
         
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    //gluPerspective(fov, width/height, nearPlane, farPlane);
     glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
     
     glUseProgram(buttonShaderProgram);
