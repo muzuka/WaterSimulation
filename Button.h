@@ -26,12 +26,16 @@ private:
   Simulation buttonChange;
   Vector bottomLeft;
   Vector topRight;
+  Vector color;
   double width;
   double height;
   double vertices[12];
 
 public:
 	Button(Simulation, Vector, Vector);
+
+  Vector getColor();
+  void setColor(Vector);
 
 	void render();
 	void renderBuffer();

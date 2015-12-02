@@ -35,14 +35,15 @@ GLFWwindow* window;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = SHOWER;
+Simulation sim    = WATERFALL;
 int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
 int numOfPoints   = 10;
-bool   simulate   = false;
+bool simulate     = false;
+bool debug        = false;
 double sigma      = 0.42f;
-Vector gravity    = Vector(0.0f, -0.001f, 0.0f);
+Vector gravity    = Vector(0.0f, -0.01f, 0.0f);
 
 double timeStep  = 1.0f;
 double pointSize = 10.0f;
@@ -52,11 +53,12 @@ double fov       = 60.0f;
 int width        = 1024;
 int height       = 760;
 int menuWidth    = 100;
-int menuHeight   = 500;
+int menuHeight   = 250;
 
 //rendering
 GLenum       glError;
 unsigned int shaderProgram;
+unsigned int buttonShaderProgram;
 unsigned int vertexShader;
 unsigned int fragShader;
 unsigned int particleVBO;
@@ -65,12 +67,25 @@ int positionInfo;
 const char* vertexShaderText =
   "#version 120\n"
   "void main() {"
-    "gl_Position = gl_Vertex;"
+    "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
   "}";
 const char* fragmentShaderText =
   "#version 120\n"
   "void main() {"
     "gl_FragColor = vec4(0.372, 0.659, 1.0, 1.0);"
+  "}";
+  
+const char* buttonVertShaderText = 
+  "#version 120\n"
+  "void main() {"
+  "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
+  "}";
+  
+const char* buttonFragShaderText =
+  "#version 120\n"
+  "uniform vec3 color;"
+  "void main() {"
+  "gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);"
   "}";
 
 void checkForError(const char* func) {
@@ -115,10 +130,8 @@ Vector kernelGradient(Vector p) {
 double density(int i) {
   double result = 0.0f;
   for(int j = 0; j < numOfPoints; j++) {
-    cout << "accessing " << i << " and " << j << endl;
     result += kernel(particles[i].getPosition() - particles[j].getPosition());
   }
-  cout << "set Density" << endl;
   return result;
 }
 
@@ -205,26 +218,33 @@ void initButtons() {
   buttons = vector<Button>();
 
   double z = 0.0f;
+  double top = -0.5f;
 
-  buttons.push_back(Button(CUP, Vector(-1.0f, 0.9f, z), Vector(1.0f, 1.0f, z)));
-  buttons.push_back(Button(SHOWER, Vector(-1.0f, 0.8f, z), Vector(1.0f, 0.9f, z)));
-  buttons.push_back(Button(WATERFALL, Vector(-1.0f, 0.7f, z), Vector(1.0f, 0.8f, z)));
-  buttons.push_back(Button(FUNNEL, Vector(-1.0f, 0.6f, z), Vector(1.0f, 0.7f, z)));
-  buttons.push_back(Button(STIRRING, Vector(-1.0f, 0.5f, z), Vector(1.0f, 0.6f, z)));
+  buttons.push_back(Button(CUP, Vector(-1.0f, top - 0.1f, z), Vector(1.0f, top, z)));
+  buttons[0].setColor(Vector(1.0f, 0.0f, 0.0f));
+  buttons.push_back(Button(SHOWER, Vector(-1.0f, top - 0.2f, z), Vector(1.0f, top - 0.1f, z)));
+  buttons[0].setColor(Vector(0.0f, 1.0f, 0.0f));
+  buttons.push_back(Button(WATERFALL, Vector(-1.0f, top - 0.3f, z), Vector(1.0f, top - 0.2f, z)));
+  buttons[0].setColor(Vector(0.0f, 0.0f, 1.0f));
+  buttons.push_back(Button(FUNNEL, Vector(-1.0f, top - 0.4f, z), Vector(1.0f, top - 0.3f, z)));
+  buttons[0].setColor(Vector(1.0f, 1.0f, 0.0f));
+  buttons.push_back(Button(STIRRING, Vector(-1.0f, top - 0.5f, z), Vector(1.0f, top - 0.4f, z)));
+  buttons[0].setColor(Vector(1.0f, 0.0f, 1.0f));
 }
 
-void attachShaders(unsigned int vs, unsigned int fs) {
-  shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vs);
-  glAttachShader(shaderProgram, fs);
+void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
+  *shaderProg = glCreateProgram();
+  glAttachShader(*shaderProg, vs);
+  glAttachShader(*shaderProg, fs);
 }
 
-void loadShaders() {
+unsigned int loadShaders(const char* vertex, const char* fragment) {
+  unsigned int tempProgram;
   int status;
   char buffer[512];
 
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexShaderText, NULL);
+  glShaderSource(vertexShader, 1, &vertex, NULL);
   glCompileShader(vertexShader);
 
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
@@ -237,7 +257,7 @@ void loadShaders() {
   }
 
   fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragShader, 1, &fragmentShaderText, NULL);
+  glShaderSource(fragShader, 1, &fragment, NULL);
   glCompileShader(fragShader);
 
   glGetShaderiv(fragShader, GL_COMPILE_STATUS, &status);
@@ -249,15 +269,12 @@ void loadShaders() {
     exit(EXIT_FAILURE);
   }
 
-  attachShaders(vertexShader, fragShader);
+  attachShaders(vertexShader, fragShader, &tempProgram);
 
-  //glBindFragDataLocation(shaderProgram, 0, "outColor");
-
-  glLinkProgram(shaderProgram);
+  glLinkProgram(tempProgram);
   checkForError("glLinkProgram");
 
-  glUseProgram(shaderProgram);
-  checkForError("glUseProgram");
+  return tempProgram;
 }
 
 void init() {
@@ -298,36 +315,41 @@ void init() {
         default:
           break;
     }
-
-    //loadShaders();
-
-    /*glBindAttribLocation(shaderProgram, 2, "position");
-    //positionInfo = glGetAttribLocation(shaderProgram, "position");
-    checkForError("glBindAttribLocation");
-    cout << "position info = " << positionInfo << endl;
-    glVertexAttribPointer(2, 3, GL_DOUBLE, GL_FALSE, 0, 0);
-    checkForError("glVertexAttribPointer");
-    glEnableVertexAttribArray(positionInfo);
-    checkForError("glEnableVertexAttribArray");
-
-    glGenVertexArrays(1, &particleVAO);
-    checkForError("glGenVertexArrays");
-
-    glGenBuffers(1, &particleVBO);
-    checkForError("glGenBuffers");*/
+    
+    shaderProgram = loadShaders(vertexShaderText, fragmentShaderText);
+    buttonShaderProgram = loadShaders(buttonVertShaderText, buttonFragShaderText);
     
 }
 
 void update() {
   for(int i = 0; i < numOfPoints; i++) {
-    particles[i].setDensity(i);
-    particles[i].setPressure(i);
+    particles[i].setDensity(density(i));
+    particles[i].setPressure(pressure(i));
+    if(debug) {
+      cout << "density: " << particles[i].getDensity() << endl;
+      cout << "pressure: " << particles[i].getPressure() << endl;
+    }
   }
-  for(int i = 0; i < numOfPoints; i++)
-    particles[i].setAcceleration(accelDueToPressure(i) + accelDueToViscosity(i) + gravity);
+  for(int i = 0; i < numOfPoints; i++) {
+    Vector accPressure = accelDueToPressure(i);
+    Vector accViscosity = accelDueToViscosity(i);
+    particles[i].setAcceleration(accPressure + accViscosity + gravity);
+    if(debug) {
+      cout << i << ": acceleration ";
+      particles[i].getAcceleration().print();
+      cout << "pressure acceleration ";
+      accPressure.print();
+      cout << "viscosity acceleration ";
+      accViscosity.print();
+    }
+  }
   for(int i = 0; i < numOfPoints; i++) {
     particles[i].setVelocity(particles[i].getVelocity() + (particles[i].getAcceleration() * timeStep));
     particles[i].setPosition(particles[i].getPosition() + (particles[i].getVelocity() * timeStep));
+    if(debug) {
+      cout << i << ": velocity ";
+      particles[i].getVelocity().print();
+    }
   }
 }
 
@@ -339,22 +361,11 @@ void render() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
+    
+    glUseProgram(shaderProgram);
 
     for(Particle p : particles)
       p.render();
-
-    /*vector<Vector> positions = getParticlePositions();
-
-    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(Vector), &positions.front(), GL_STREAM_DRAW);
-    //checkForError("glBufferData");
-
-    glBindVertexArray(particleVAO);
-    //checkForError("glBindVertexArray");
-    glBindBuffer(GL_ARRAY_BUFFER, particleVBO);
-    //checkForError("glBindBuffer");
-
-    glDrawArrays(GL_POINTS, 0, particles.size());
-    //checkForError("glDrawArrays");*/
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -366,11 +377,19 @@ void render() {
         
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    //gluPerspective(fov, width/height, nearPlane, farPlane);
     glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
+    
+    int colorUniformLoc = glGetUniformLocation(buttonShaderProgram, "color");
+    
+    
+    
+    
+    glUseProgram(buttonShaderProgram);
 
-    for(Button b : buttons)
+    for(Button b : buttons) {
+      glUniform3f(colorUniformLoc, b.getColor().getX(), b.getColor().getY(), b.getColor().getZ());
       b.render();
+    }
     
     glfwSwapBuffers(menu);
     glfwPollEvents();
@@ -384,6 +403,8 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
       update();
     if(key == GLFW_KEY_SPACE)
       simulate = !simulate;
+    if(key == GLFW_KEY_D)
+      debug = !debug;
   }
 }
 
@@ -430,7 +451,7 @@ int main(int argc, char **argv)
 
   cout << "about to start loop" << endl;
 	while(!glfwWindowShouldClose(window)) {
-    while(simulate) {
+    if(simulate) {
       update();
     }
 
