@@ -1,4 +1,6 @@
 
+#include "Triangle.h"
+
 Triangle::Triangle() {
 
 }
@@ -9,7 +11,7 @@ Triangle::Triangle(Vector i, Vector j, Vector k) {
 	this->k = k;
 	Vector ij = i - j;
 	Vector kj = k - j;
-	this->normal = Vector.crossProduct(ij, kj);
+	this->normal = Vector::crossProduct(ij, kj);
 }
 
 Vector Triangle::getCollision() {
@@ -23,8 +25,8 @@ bool Triangle::intersect(Vector p1, Vector p2) {
 
 	dir = p2 - p1;
 	wo = p1 - i;
-	a = -Vector.dotProduct(normal, w0);
-	b = Vector.dotProduct(normal, dir);
+	a = -Vector::dotProduct(normal, wo);
+	b = Vector::dotProduct(normal, dir);
 	if(fabs(b) < 0.000001) {
 		if(a == 0)
 			return false;
@@ -37,17 +39,20 @@ bool Triangle::intersect(Vector p1, Vector p2) {
 	if(r < 0.0f)
 		return false;
 
-	collision = p1 + r * dir;
+	collision = p1 + dir * r;
 
 	float uu, uv, vv, wu, wv, D;
+  Vector u, v;
+  u = j - i;
+  v = k - i;
 
 	// is point inside Triangle?
-	uu = Vector.dotProduct(u, u);
-	uv = Vector.dotProduct(u, v);
-	vv = Vector.dotProduct(v, v);
+	uu = Vector::dotProduct(u, u);
+	uv = Vector::dotProduct(u, v);
+	vv = Vector::dotProduct(v, v);
 	w = collision - i;
-	wu = Vector.dotProduct(w, u);
-	wv = Vector.dotProduct(w, v);
+	wu = Vector::dotProduct(w, u);
+	wv = Vector::dotProduct(w, v);
 	D = uv * uv - uu * vv;
 
 	// get and test parametric coordinates
