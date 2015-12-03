@@ -225,10 +225,9 @@ void initStirring() {
 }
 
 void initButtons() {
-  buttons = vector<Button>();
-
   double z = 0.0f;
   double top = -0.5f;
+  buttons = vector<Button>();
 
   buttons.push_back(Button(CUP, Vector(-1.0f, top - 0.1f, z), Vector(1.0f, top, z)));
   buttons[0].setColor(Vector(1.0f, 0.0f, 0.0f));
@@ -365,6 +364,7 @@ void update() {
 
     particles[i].setVelocity(particles[i].getVelocity() + (particles[i].getAcceleration() * timeStep));
     
+    // detect collision and change velocity
     oldPos = particles[i].getPosition();
     newPos = oldPos + particles[i].getVelocity();
     for(Triangle t : triangles) {
@@ -435,8 +435,9 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 void mouseFunc(GLFWwindow* window, int button, int action, int mods) {
+  double x, y;
+
   if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-    double x, y;
     glfwGetCursorPos(menu, &x, &y);
   }
 }
