@@ -242,6 +242,10 @@ void initButtons() {
   buttons[0].setColor(Vector(1.0f, 0.0f, 1.0f));
 }
 
+void processCollision() {
+  
+}
+
 void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
   *shaderProg = glCreateProgram();
   glAttachShader(*shaderProg, vs);
