@@ -26,16 +26,18 @@
 #include "Particle.h"
 #include "Button.h"
 #include "Simulation.h"
+#include "Triangle.h"
 
 using namespace std;
 
 GLFWwindow* menu;
 GLFWwindow* window;
 
+vector<Triangle> triangles;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = WATERFALL;
+Simulation sim    = SHOWER;
 int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
@@ -315,13 +317,14 @@ void init() {
         default:
           break;
     }
-    
+
     shaderProgram = loadShaders(vertexShaderText, fragmentShaderText);
     buttonShaderProgram = loadShaders(buttonVertShaderText, buttonFragShaderText);
     
 }
 
 void update() {
+  // Set density and pressure
   for(int i = 0; i < numOfPoints; i++) {
     particles[i].setDensity(density(i));
     particles[i].setPressure(pressure(i));
@@ -330,6 +333,7 @@ void update() {
       cout << "pressure: " << particles[i].getPressure() << endl;
     }
   }
+  // reset acceleration
   for(int i = 0; i < numOfPoints; i++) {
     Vector accPressure = accelDueToPressure(i);
     Vector accViscosity = accelDueToViscosity(i);
@@ -343,8 +347,21 @@ void update() {
       accViscosity.print();
     }
   }
+  // move points
   for(int i = 0; i < numOfPoints; i++) {
+    Vector oldPos, newPos;
+
     particles[i].setVelocity(particles[i].getVelocity() + (particles[i].getAcceleration() * timeStep));
+    
+    oldPos = particles[i].getPosition();
+    newPos = oldPos + particles[i].getVelocity();
+    for(Triangle t : triangles) {
+      if(t.intersect(oldPos, newPos)) {
+        // process collision
+        
+      }
+    }
+
     particles[i].setPosition(particles[i].getPosition() + (particles[i].getVelocity() * timeStep));
     if(debug) {
       cout << i << ": velocity ";
@@ -380,10 +397,7 @@ void render() {
     glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
     
     int colorUniformLoc = glGetUniformLocation(buttonShaderProgram, "color");
-    
-    
-    
-    
+
     glUseProgram(buttonShaderProgram);
 
     for(Button b : buttons) {
