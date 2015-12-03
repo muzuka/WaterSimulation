@@ -1,4 +1,11 @@
 
+/*
+ * Triangle class for collisions
+ *
+ * 
+ * Written by:Sean Brown
+ */
+
 #include "Triangle.h"
 
 Triangle::Triangle() {

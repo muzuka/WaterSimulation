@@ -3,7 +3,14 @@
 /*
  *  Water Simulation
  *  
- *  Author: Sean Brown
+ *  Contains Simulations:
+ *    CUP       - water falling into a cup
+ *    SHOWER    - water falls onto surface
+ *    WATERFALL - water flows over edge
+ *    FUNNEL    - water falls through a funnel
+ *    STIRRING  - water is in cup and can be stirred
+ * 
+ *  Written by: Sean Brown
  *
  */
 
@@ -186,6 +193,7 @@ void initCup() {
 void initShower() {
   for(int i = 0; i < pointWidth; i++)
       particles.push_back(Particle(Vector(i/10.0f, 0.9f, -2.0f)));
+  
 }
 
 void initWaterfall() {
@@ -358,7 +366,7 @@ void update() {
     for(Triangle t : triangles) {
       if(t.intersect(oldPos, newPos)) {
         // process collision
-        
+        processCollision(t.getCollision(), particles[i]);
       }
     }
 

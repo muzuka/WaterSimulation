@@ -4,7 +4,9 @@
 /*
  * Triangle class for collisions
  *
- *
+ * Represents a wall
+ * 
+ * Written by: Sean Brown
  */
 
 #include "Vector.h"
@@ -22,6 +24,7 @@ class Triangle {
 
 		Vector getCollision();
 
+    // tests for intersection by a line
 		bool intersect(Vector, Vector);
 };
 

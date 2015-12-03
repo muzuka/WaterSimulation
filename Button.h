@@ -4,7 +4,10 @@
 
 /*
  *	Button class definition
+ * 
+ *  Meant to change scene
  *
+ *  Written by: Sean Brown
  */
 
 #define _GLFW_X11
@@ -33,12 +36,13 @@ private:
 
 public:
 	Button(Simulation, Vector, Vector);
+  
+  Simulation getSim();
 
   Vector getColor();
   void setColor(Vector);
 
 	void render();
-	void renderBuffer();
 
 };
 

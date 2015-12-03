@@ -2,6 +2,7 @@
 /*
  *	Button class implementation
  *
+ *  Written by: Sean Brown
  */
 
 #include "Button.h"
@@ -43,11 +44,4 @@ void Button::render() {
 	glVertex3f(topRight.getX(), topRight.getY(), topRight.getZ());
   glVertex3f(bottomLeft.getX(), bottomLeft.getY(), bottomLeft.getZ());
 	glEnd();
-}
-
-void Button::renderBuffer() {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 12);
 }
