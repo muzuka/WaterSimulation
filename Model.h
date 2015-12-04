@@ -14,15 +14,17 @@
 
 class Model {
 	private:
-		vector<Triangle> mesh;
+		std::vector<Triangle> mesh;
 
 	public:
 	
 	Model();
-	Model(vector<Triangle>);
+	Model(std::vector<Triangle>);
 	Model(const char*);
 
-	void extractOBJ(const char*);
+	std::vector<Triangle> getMesh();
+
+	std::vector<Triangle> extractOBJ(const char*);
 };
 
 #endif

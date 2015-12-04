@@ -26,6 +26,10 @@ Model::Model(const char* m) {
 	this->mesh = extractOBJ(m);
 }
 
+vector<Triangle> Model::getMesh() {
+	return mesh;
+}
+
 vector<Triangle> Model::extractOBJ(const char* m) {
 	vector<Triangle> temp = vector<Triangle>();
 	vector<Vector> vectorList = std::vector<Vector>();
@@ -46,9 +50,11 @@ vector<Triangle> Model::extractOBJ(const char* m) {
 		switch(mode) {
 			case 'v':
 				fileIn >> v1 >> v2 >> v3;
+				vectorList.push_back(Vector(v1, v2, v3));
 				break;
 			case 'f':
 				fileIn >> x >> y >> z;
+				temp.push_back(Triangle(vectorList[x-1], vectorList[y-1], vectorList[z-1]));
 				break;
 			default:
 				fileIn.ignore(256, '\n');
@@ -57,4 +63,6 @@ vector<Triangle> Model::extractOBJ(const char* m) {
 	}
 
 	fileIn.close();
+
+	return temp;
 }
