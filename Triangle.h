@@ -23,6 +23,7 @@ class Triangle {
 		Triangle(Vector, Vector, Vector);
 
 		Vector getCollision();
+		Vector getNormal();
 
     // tests for intersection by a line
 		bool intersect(Vector, Vector);

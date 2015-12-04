@@ -25,6 +25,10 @@ Vector Triangle::getCollision() {
 	return collision;
 }
 
+Vector Triangle::getNormal() {
+	return normal;
+}
+
 // Code from http://geomalgorithms.com/a06-_intersect-2.html
 bool Triangle::intersect(Vector p1, Vector p2) {
 	Vector dir, wo, w;
