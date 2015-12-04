@@ -34,17 +34,18 @@
 #include "Button.h"
 #include "Simulation.h"
 #include "Triangle.h"
+#include "Model.h"
 
 using namespace std;
 
 GLFWwindow* menu;
 GLFWwindow* window;
 
-vector<Triangle> triangles;
+Model mesh;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = SHOWER;
+Simulation sim    = WATERFALL;
 int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
@@ -188,12 +189,13 @@ void initCup() {
       particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -2.0f)));
     }
   }
+  mesh = Model("CUP.obj");
 }
 
 void initShower() {
   for(int i = 0; i < pointWidth; i++)
       particles.push_back(Particle(Vector(i/10.0f, 0.9f, -2.0f)));
-  
+  mesh = Model("SHOWER.obj");
 }
 
 void initWaterfall() {
@@ -204,6 +206,7 @@ void initWaterfall() {
       }
     }
   }
+  mesh = Model("WATERFALL.obj");
 }
 
 void initFunnel() {
@@ -212,6 +215,7 @@ void initFunnel() {
       particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -2.0f)));
     }
   }
+  mesh = Model("FUNNEL.obj");
 }
 
 void initStirring() {
@@ -222,6 +226,7 @@ void initStirring() {
       } 
     }
   }
+  mesh = Model("CUP.obj");
 }
 
 void initButtons() {
@@ -239,10 +244,6 @@ void initButtons() {
   buttons[0].setColor(Vector(1.0f, 1.0f, 0.0f));
   buttons.push_back(Button(STIRRING, Vector(-1.0f, top - 0.5f, z), Vector(1.0f, top - 0.4f, z)));
   buttons[0].setColor(Vector(1.0f, 0.0f, 1.0f));
-}
-
-void processCollision() {
-  
 }
 
 void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
@@ -367,10 +368,11 @@ void update() {
     // detect collision and change velocity
     oldPos = particles[i].getPosition();
     newPos = oldPos + particles[i].getVelocity();
-    for(Triangle t : triangles) {
+    for(Triangle t : mesh.getMesh()) {
       if(t.intersect(oldPos, newPos)) {
         // process collision
-        processCollision(t.getCollision(), particles[i]);
+        cout << "Collision!" << endl;
+        particles[i].setVelocity(t.getNormal());
       }
     }
 
