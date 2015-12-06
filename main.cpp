@@ -45,7 +45,10 @@ Model mesh;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = WATERFALL;
+Simulation sim    = STIRRING;
+int pointXStart   = 0;
+int pointYStart   = 0;
+int pointZStart   = 0;
 int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
@@ -53,14 +56,14 @@ int numOfPoints   = 10;
 bool simulate     = false;
 bool debug        = false;
 double sigma      = 0.42f;
-Vector gravity    = Vector(0.0f, -0.01f, 0.0f);
+Vector gravity    = Vector(0.0f, -9.81f, 0.0f);
 
-double timeStep  = 1.0f;
+double timeStep  = 0.1f;
 double pointSize = 10.0f;
 double nearPlane = 1.0f;
 double farPlane  = 100.0f;
 double fov       = 60.0f;
-double zoom      = 0.0f;
+double zoom      = -1.0f;
 double rotationX = 0.0f;
 double rotationY = 0.0f;
 int width        = 1024;
@@ -200,25 +203,35 @@ void cleanUp() {
 }
 
 void initCup() {
+  zoom = -5.0f;
+  rotationX = 50.0f;
+  
   for(int i = 0; i < pointWidth; i++) {
     for(int j = 0; j < pointHeight; j++) {
-      particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -2.0f)));
+      particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), 0.0f)));
     }
   }
   mesh = Model("CUP.obj");
 }
 
 void initShower() {
+  zoom = -5.0f;
+  rotationX = 30.0f;
+  
   for(int i = 0; i < pointWidth; i++)
-      particles.push_back(Particle(Vector(i/10.0f, 0.9f, -2.0f)));
+      particles.push_back(Particle(Vector(i/10.0f, 0.9f, 0.0f)));
   mesh = Model("SHOWER.obj");
 }
 
 void initWaterfall() {
+  zoom = -4.0f;
+  rotationX = 30.0f;
+  rotationY = -40.0f;
+  
   for(int i = 0; i < pointWidth; i++) {
     for(int j = 0; j < pointHeight; j++) {
       for(int k = 0; k < pointDepth; k++) {
-        particles.push_back(Particle(Vector(i/10.0f, 0.9f + (j/10.0f), -2.0f - (k/10.0f))));
+        particles.push_back(Particle(Vector(i/10.0f, 0.9f + (j/10.0f), (k/10.0f))));
       }
     }
   }
@@ -226,19 +239,24 @@ void initWaterfall() {
 }
 
 void initFunnel() {
+  zoom = -3.0f;
+  rotationX = 60.0f;
+  
   for(int i = 0; i < pointWidth; i++) {
     for(int j = 0; j < pointHeight; j++) {
-      particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -2.0f)));
+      particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), 0.0f)));
     }
   }
   mesh = Model("FUNNEL.obj");
 }
 
 void initStirring() {
+  zoom = -3.0f;
+  rotationX = 50.0f;
   for(int i = 0; i < pointWidth; i++) {
     for(int j = 0; j < pointHeight; j++) {
       for(int k = 0; k < pointDepth; k++) {
-        particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), -2.0f - (k/10.0f))));
+        particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), (k/10.0f))));
       } 
     }
   }
@@ -316,6 +334,8 @@ void init() {
       cleanUp();
       exit(EXIT_FAILURE); 
     }
+    
+    glEnable(GL_DEPTH_TEST);
 
     particles = vector<Particle>();
 
@@ -362,7 +382,7 @@ void checkCollision(int i) {
       if(t.intersect(oldPos, newPos)) {
         // process collision
         cout << "Collision!" << endl;
-        particles[i].setVelocity(t.getNormal());
+        particles[i].setVelocity(t.getNormal()/t.getNormal().length());
       }
     }
 }
@@ -404,29 +424,27 @@ void update() {
 void render() {
 
     glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
-    //gluLookAt(0.0f, 10.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glTranslatef(0.0f, 0.0f, zoom);
     glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
     glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
-    
-    
-    glUseProgram(shaderProgram);
-
-    for(Particle p : particles)
-      p.render();
       
     glUseProgram(triangleShaderProgram);
       
     for(Triangle t : mesh.getMesh())
       t.render();
+      
+    glUseProgram(shaderProgram);
+
+    for(Particle p : particles)
+      p.render();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
