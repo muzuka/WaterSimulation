@@ -45,7 +45,7 @@ Model mesh;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = SHOWER;
+Simulation sim    = WATERFALL;
 int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
@@ -60,6 +60,9 @@ double pointSize = 10.0f;
 double nearPlane = 1.0f;
 double farPlane  = 100.0f;
 double fov       = 60.0f;
+double zoom      = 0.0f;
+double rotationX = 0.0f;
+double rotationY = 0.0f;
 int width        = 1024;
 int height       = 760;
 int menuWidth    = 100;
@@ -69,6 +72,7 @@ int menuHeight   = 250;
 GLenum       glError;
 unsigned int shaderProgram;
 unsigned int buttonShaderProgram;
+unsigned int triangleShaderProgram;
 unsigned int vertexShader;
 unsigned int fragShader;
 unsigned int particleVBO;
@@ -95,7 +99,19 @@ const char* buttonFragShaderText =
   "#version 120\n"
   "uniform vec3 color;"
   "void main() {"
-  "gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);"
+  "gl_FragColor = vec4(color, 1.0f);"
+  "}";
+  
+const char* triangleVertShaderText = 
+  "#version 120\n"
+  "void main() {"
+  "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
+  "}";
+  
+const char* triangleFragShaderText =
+  "#version 120\n"
+  "void main() {"
+  "gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 0.5f);"
   "}";
 
 void checkForError(const char* func) {
@@ -332,6 +348,7 @@ void init() {
 
     shaderProgram = loadShaders(vertexShaderText, fragmentShaderText);
     buttonShaderProgram = loadShaders(buttonVertShaderText, buttonFragShaderText);
+    triangleShaderProgram = loadShaders(triangleVertShaderText, triangleFragShaderText);
     
 }
 
@@ -368,19 +385,13 @@ void update() {
     if(debug) {
       cout << i << ": acceleration ";
       particles[i].getAcceleration().print();
-      cout << "pressure acceleration ";
-      accPressure.print();
-      cout << "viscosity acceleration ";
-      accViscosity.print();
     }
   }
   // move points
   for(int i = 0; i < numOfPoints; i++) {
-    
-
     particles[i].setVelocity(particles[i].getVelocity() + (particles[i].getAcceleration() * timeStep));
     
-
+    checkCollision(i);
 
     particles[i].setPosition(particles[i].getPosition() + (particles[i].getVelocity() * timeStep));
     if(debug) {
@@ -398,11 +409,24 @@ void render() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(fov, width/height, nearPlane, farPlane);
+    //gluLookAt(0.0f, 10.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, zoom);
+    glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
+    glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
+    
     
     glUseProgram(shaderProgram);
 
     for(Particle p : particles)
       p.render();
+      
+    glUseProgram(triangleShaderProgram);
+      
+    for(Triangle t : mesh.getMesh())
+      t.render();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -431,6 +455,12 @@ void render() {
     glfwMakeContextCurrent(window);
 }
 
+// Use mouse wheel to zoom
+void scrollFunc(GLFWwindow* win, double x, double y) {
+
+    zoom += y;
+}
+
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods) {
   if(action == GLFW_PRESS) {
     if(key == GLFW_KEY_ENTER)
@@ -439,6 +469,14 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
       simulate = !simulate;
     if(key == GLFW_KEY_D)
       debug = !debug;
+    if(key == GLFW_KEY_UP)
+      rotationX += 10.0f;
+    if(key == GLFW_KEY_DOWN)
+      rotationX -= 10.0f;
+    if(key == GLFW_KEY_LEFT)
+      rotationY -= 10.0f;
+    if(key == GLFW_KEY_RIGHT)
+      rotationY += 10.0f;
   }
 }
 
@@ -479,6 +517,7 @@ int main(int argc, char **argv)
   
 	glfwMakeContextCurrent(window);
   glfwSetKeyCallback(window, keyboardFunc);
+  glfwSetScrollCallback(window, scrollFunc);
   glfwSetMouseButtonCallback(menu, mouseFunc);
 
 	init();
