@@ -45,7 +45,7 @@ Model mesh;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = WATERFALL;
+Simulation sim    = SHOWER;
 int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
@@ -335,6 +335,21 @@ void init() {
     
 }
 
+void checkCollision(int i) {
+    Vector oldPos, newPos;
+
+    // detect collision and change velocity
+    oldPos = particles[i].getPosition();
+    newPos = oldPos + particles[i].getVelocity();
+    for(Triangle t : mesh.getMesh()) {
+      if(t.intersect(oldPos, newPos)) {
+        // process collision
+        cout << "Collision!" << endl;
+        particles[i].setVelocity(t.getNormal());
+      }
+    }
+}
+
 void update() {
   // Set density and pressure
   for(int i = 0; i < numOfPoints; i++) {
@@ -361,20 +376,11 @@ void update() {
   }
   // move points
   for(int i = 0; i < numOfPoints; i++) {
-    Vector oldPos, newPos;
+    
 
     particles[i].setVelocity(particles[i].getVelocity() + (particles[i].getAcceleration() * timeStep));
     
-    // detect collision and change velocity
-    oldPos = particles[i].getPosition();
-    newPos = oldPos + particles[i].getVelocity();
-    for(Triangle t : mesh.getMesh()) {
-      if(t.intersect(oldPos, newPos)) {
-        // process collision
-        cout << "Collision!" << endl;
-        particles[i].setVelocity(t.getNormal());
-      }
-    }
+
 
     particles[i].setPosition(particles[i].getPosition() + (particles[i].getVelocity() * timeStep));
     if(debug) {

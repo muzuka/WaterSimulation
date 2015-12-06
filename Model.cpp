@@ -33,8 +33,8 @@ vector<Triangle> Model::getMesh() {
 vector<Triangle> Model::extractOBJ(const char* m) {
 	vector<Triangle> temp = vector<Triangle>();
 	vector<Vector> vectorList = std::vector<Vector>();
-	float x, y, z;
-	int v1, v2, v3;
+	int x, y, z;
+	double v1, v2, v3;
 	char mode;
 	fstream fileIn = fstream();
 
@@ -46,14 +46,19 @@ vector<Triangle> Model::extractOBJ(const char* m) {
 
 	while(fileIn) {
 		fileIn >> mode;
-
+		cout << "mode = " << mode << endl;
+		
 		switch(mode) {
 			case 'v':
+				cout << "vertex input" << endl;
 				fileIn >> v1 >> v2 >> v3;
+				cout << "vertices = " << v1 << " " << v2 << " " << v3 << endl;
 				vectorList.push_back(Vector(v1, v2, v3));
 				break;
 			case 'f':
+				cout << "face input" << endl;
 				fileIn >> x >> y >> z;
+				cout << "faces = " << x << " " << y << " " << z << endl;
 				temp.push_back(Triangle(vectorList[x-1], vectorList[y-1], vectorList[z-1]));
 				break;
 			default:
@@ -64,5 +69,6 @@ vector<Triangle> Model::extractOBJ(const char* m) {
 
 	fileIn.close();
 
+	cout << temp.size() << endl;
 	return temp;
 }
