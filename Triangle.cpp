@@ -29,6 +29,14 @@ Vector Triangle::getNormal() {
 	return normal;
 }
 
+void Triangle::render() {
+  glBegin(GL_TRIANGLES);
+    glVertex3f(i.getX(), i.getY(), i.getZ());
+    glVertex3f(j.getX(), j.getY(), j.getZ());
+    glVertex3f(k.getX(), k.getY(), k.getZ());
+  glEnd();
+}
+
 // Code from http://geomalgorithms.com/a06-_intersect-2.html
 bool Triangle::intersect(Vector p1, Vector p2) {
 	Vector dir, wo, w;
