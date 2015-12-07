@@ -26,6 +26,11 @@ Model::Model(const char* m) {
 	this->mesh = extractOBJ(m);
 }
 
+void Model::render() {
+	for(Triangle t : mesh)
+		t.render();
+}
+
 vector<Triangle> Model::getMesh() {
 	return mesh;
 }
