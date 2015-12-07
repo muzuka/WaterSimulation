@@ -45,7 +45,7 @@ Model mesh;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = STIRRING;
+Simulation sim    = WATERFALL;
 int pointXStart   = 0;
 int pointYStart   = 0;
 int pointZStart   = 0;
@@ -253,6 +253,7 @@ void initFunnel() {
 void initStirring() {
   zoom = -3.0f;
   rotationX = 50.0f;
+  
   for(int i = 0; i < pointWidth; i++) {
     for(int j = 0; j < pointHeight; j++) {
       for(int k = 0; k < pointDepth; k++) {
@@ -267,18 +268,20 @@ void initStirring() {
 void initButtons() {
   double z = 0.0f;
   double top = -0.5f;
+  double rightSide = -0.5f;
+  double leftSide = -1.0f;
   buttons = vector<Button>();
 
-  buttons.push_back(Button(CUP, Vector(-1.0f, top - 0.1f, z), Vector(1.0f, top, z)));
+  buttons.push_back(Button(CUP, Vector(leftSide, top - 0.1f, z), Vector(rightSide, top, z)));
   buttons[0].setColor(Vector(1.0f, 0.0f, 0.0f));
-  buttons.push_back(Button(SHOWER, Vector(-1.0f, top - 0.2f, z), Vector(1.0f, top - 0.1f, z)));
-  buttons[0].setColor(Vector(0.0f, 1.0f, 0.0f));
-  buttons.push_back(Button(WATERFALL, Vector(-1.0f, top - 0.3f, z), Vector(1.0f, top - 0.2f, z)));
-  buttons[0].setColor(Vector(0.0f, 0.0f, 1.0f));
-  buttons.push_back(Button(FUNNEL, Vector(-1.0f, top - 0.4f, z), Vector(1.0f, top - 0.3f, z)));
-  buttons[0].setColor(Vector(1.0f, 1.0f, 0.0f));
-  buttons.push_back(Button(STIRRING, Vector(-1.0f, top - 0.5f, z), Vector(1.0f, top - 0.4f, z)));
-  buttons[0].setColor(Vector(1.0f, 0.0f, 1.0f));
+  buttons.push_back(Button(SHOWER, Vector(leftSide, top - 0.2f, z), Vector(rightSide, top - 0.1f, z)));
+  buttons[1].setColor(Vector(0.0f, 1.0f, 0.0f));
+  buttons.push_back(Button(WATERFALL, Vector(leftSide, top - 0.3f, z), Vector(rightSide, top - 0.2f, z)));
+  buttons[2].setColor(Vector(0.0f, 0.0f, 1.0f));
+  buttons.push_back(Button(FUNNEL, Vector(leftSide, top - 0.4f, z), Vector(rightSide, top - 0.3f, z)));
+  buttons[3].setColor(Vector(1.0f, 1.0f, 0.0f));
+  buttons.push_back(Button(STIRRING, Vector(leftSide, top - 0.5f, z), Vector(rightSide, top - 0.4f, z)));
+  buttons[4].setColor(Vector(1.0f, 0.0f, 1.0f));
 }
 
 void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
@@ -338,10 +341,9 @@ void init() {
     }
     
     glEnable(GL_DEPTH_TEST);
+    glPointSize(pointSize);
 
     particles = vector<Particle>();
-
-    glPointSize(pointSize);
 
     switch(sim) {
         case CUP:
@@ -372,6 +374,7 @@ void init() {
     buttonShaderProgram = loadShaders(buttonVertShaderText, buttonFragShaderText);
     triangleShaderProgram = loadShaders(triangleVertShaderText, triangleFragShaderText);
     
+    simulate = false;
 }
 
 // checks ith particle
@@ -506,6 +509,14 @@ void mouseFunc(GLFWwindow* window, int button, int action, int mods) {
 
   if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
     glfwGetCursorPos(menu, &x, &y);
+    cout << "mouseFunc called at " << x << " " << y << endl;
+    for(Button b : buttons) {
+      if(b.inside(x, y)) {
+        cout << "button pressed" << endl;
+        sim = b.getSim();
+        init();
+      }
+    }
   }
 }
 
