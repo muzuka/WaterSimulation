@@ -377,9 +377,17 @@ void init() {
     simulate = false;
 }
 
+Vector reflect(Vector v, Vector n, double b, double s) {
+  n.normalize();
+  n = n * Vector::dotProduct(v, n);
+  return (n * -b) + ((v - n) * s);
+}
+
 // checks ith particle
 void checkCollision(int i) {
     Vector oldPos, newPos;
+    double bounce = 0.0f;
+    double slide  = 1.0f;
 
     // detect collision and change velocity
     oldPos = particles[i].getPosition();
@@ -388,7 +396,10 @@ void checkCollision(int i) {
       if(t.intersect(oldPos, newPos)) {
         // process collision
         cout << "Collision!" << endl;
-        particles[i].setVelocity(t.getNormal()/t.getNormal().length());
+        oldPos.print();
+        newPos.print();
+        t.getCollision().print();
+        particles[i].setVelocity(reflect(particles[i].getVelocity(), t.getNormal(), bounce, slide));
       }
     }
 }
@@ -403,7 +414,7 @@ void update() {
       cout << "pressure: " << particles[i].getPressure() << endl;
     }
   }
-  // reset acceleration
+  // set acceleration
   for(int i = 0; i < numOfPoints; i++) {
     Vector accPressure = accelDueToPressure(i);
     Vector accViscosity = accelDueToViscosity(i);
@@ -429,6 +440,7 @@ void update() {
 
 void render() {
 
+    // MAIN Rendering Start ############################################
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
@@ -455,6 +467,7 @@ void render() {
     glfwSwapBuffers(window);
     glfwPollEvents();
 
+    // MENU Rendering Start ############################################
     glfwMakeContextCurrent(menu);
 
     glViewport(0, 0, width, height);
@@ -487,19 +500,19 @@ void scrollFunc(GLFWwindow* win, double x, double y) {
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods) {
   if(action == GLFW_PRESS) {
-    if(key == GLFW_KEY_ENTER)
+    if(key == GLFW_KEY_ENTER) // update timestep
       update();
-    if(key == GLFW_KEY_SPACE)
+    if(key == GLFW_KEY_SPACE) // toggle simulation
       simulate = !simulate;
-    if(key == GLFW_KEY_D)
+    if(key == GLFW_KEY_D)     // set debug
       debug = !debug;
-    if(key == GLFW_KEY_UP)
+    if(key == GLFW_KEY_UP)    // rotate X-axis
       rotationX += 10.0f;
-    if(key == GLFW_KEY_DOWN)
+    if(key == GLFW_KEY_DOWN)  // rotate X-axis
       rotationX -= 10.0f;
-    if(key == GLFW_KEY_LEFT)
+    if(key == GLFW_KEY_LEFT)  // rotate Y-axis
       rotationY -= 10.0f;
-    if(key == GLFW_KEY_RIGHT)
+    if(key == GLFW_KEY_RIGHT) // rotate Y-axis
       rotationY += 10.0f;
   }
 }
@@ -510,6 +523,7 @@ void mouseFunc(GLFWwindow* window, int button, int action, int mods) {
   if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
     glfwGetCursorPos(menu, &x, &y);
     cout << "mouseFunc called at " << x << " " << y << endl;
+    
     for(Button b : buttons) {
       if(b.inside(x, y)) {
         cout << "button pressed" << endl;
