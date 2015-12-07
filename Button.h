@@ -39,6 +39,8 @@ public:
   
   Simulation getSim();
 
+  bool inside(double, double);
+
   Vector getColor();
   void setColor(Vector);
 
