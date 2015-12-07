@@ -263,6 +263,7 @@ void initStirring() {
   mesh = Model("CUP.obj");
 }
 
+// sets button positions.
 void initButtons() {
   double z = 0.0f;
   double top = -0.5f;
@@ -286,6 +287,7 @@ void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
   glAttachShader(*shaderProg, fs);
 }
 
+// compiles and returns program
 unsigned int loadShaders(const char* vertex, const char* fragment) {
   unsigned int tempProgram;
   int status;
@@ -372,6 +374,7 @@ void init() {
     
 }
 
+// checks ith particle
 void checkCollision(int i) {
     Vector oldPos, newPos;
 
