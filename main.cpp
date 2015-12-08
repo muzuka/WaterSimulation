@@ -55,7 +55,8 @@ int pointDepth    = 5;
 int numOfPoints   = 10;
 bool simulate     = false;
 bool debug        = false;
-double sigma      = 0.42f;
+double sigma      = 0.9f;
+double viscosity  = 0.1f;
 Vector gravity    = Vector(0.0f, -1.0f, 0.0f);
 
 double timeStep  = 0.1f;
@@ -145,16 +146,16 @@ void checkForError(const char* func) {
 }
 
 double kernel(Vector p) {
-  double normalDistance = Vector::dotProduct(p, p) / (2 * sigma);
+  double normalDistance = Vector::dotProduct(p, p) / (2 * pow(sigma, 2));
   if(normalDistance > 50)
     return 0;
   else
-    return (1.0f / (3.14f * 2 * sigma)) * exp(-normalDistance);
+    return (1.0f / pow((sqrt(3.14f * 2) * sigma), 3)) * exp(-normalDistance);
 }
 
 Vector kernelGradient(Vector p) {
   Vector temp = p;
-  return ((temp / sigma) * -1) * kernel(p);
+  return ((temp / pow(sigma, 3)) * -1) * kernel(p);
 }
 
 double density(int i) {
@@ -166,7 +167,7 @@ double density(int i) {
 }
 
 double pressure(int i) {
-  return 0.01f * pow(particles[i].getDensity() - 0.05f, 9.0f);
+  return 0.01f * pow(particles[i].getDensity() - 0.05f, 3.0f);
 }
 
 Vector accelDueToPressure(int i) {
@@ -179,7 +180,7 @@ Vector accelDueToPressure(int i) {
 Vector accelDueToViscosity(int i) {
   Vector result = Vector();
   for(int j = 0; j < numOfPoints; j++)
-    result += ((particles[j].getVelocity() - particles[i].getVelocity()) / particles[j].getDensity()) * 0.1f * kernel(particles[j].getPosition() - particles[i].getPosition());
+    result += ((particles[j].getVelocity() - particles[i].getVelocity()) / particles[j].getDensity()) * viscosity * kernel(particles[j].getPosition() - particles[i].getPosition());
   return result / particles[i].getDensity();
 }
 
@@ -193,10 +194,6 @@ vector<Vector> getParticlePositions() {
 
 void cleanUp() {
   glDeleteProgram(shaderProgram);
-  glDeleteShader(fragShader);
-  glDeleteShader(vertexShader);
-  glDeleteBuffers(1, &particleVBO);
-  glDeleteVertexArrays(1, &particleVAO);
 
   glfwDestroyWindow(menu);
   glfwDestroyWindow(window);
@@ -387,7 +384,7 @@ Vector reflect(Vector v, Vector n, double b, double s) {
 // checks ith particle
 void checkCollision(int i) {
     Vector oldPos, newPos;
-    double bounce = 0.0f;
+    double bounce = 0.1f;
     double slide  = 1.0f;
 
     // detect collision and change velocity
@@ -424,9 +421,13 @@ void update() {
     Vector accPressure = accelDueToPressure(i);
     Vector accViscosity = accelDueToViscosity(i);
     particles[i].setAcceleration(accPressure + accViscosity + gravity);
-    if(debug) {
+    if(debug && i % 10 == 0) {
       cout << i << ": acceleration ";
       particles[i].getAcceleration().print();
+      cout << i << ": pressure ";
+      accPressure.print();
+      cout << i << ": viscosity ";
+      accViscosity.print();
     }
   }
   // move points
@@ -436,10 +437,10 @@ void update() {
     checkCollision(i);
 
     particles[i].setPosition(particles[i].getPosition() + (particles[i].getVelocity() * timeStep));
-    if(debug) {
-      cout << i << ": velocity ";
-      particles[i].getVelocity().print();
-    }
+    //if(debug) {
+      //cout << i << ": velocity ";
+      //particles[i].getVelocity().print();
+    //}
   }
 }
 
@@ -495,9 +496,9 @@ void render() {
 
     for(Button b : buttons) {
       colorUniformLoc = glGetUniformLocation(buttonShaderProgram, "color");
-      checkForError("glGetUniformLocation");
+      //checkForError("glGetUniformLocation");
       glUniform3f(colorUniformLoc, b.getColor().getX(), b.getColor().getY(), b.getColor().getZ());
-      checkForError("glUniform3f");
+      //checkForError("glUniform3f");
       b.render();
     }
     
