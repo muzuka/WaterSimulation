@@ -395,14 +395,14 @@ void checkCollision(int i) {
     for(Triangle t : mesh.getMesh()) {
       if(t.intersect(oldPos, newPos)) {
         // process collision
-        cout << "Collision!" << endl;
-        t.getI().print();
-        t.getJ().print();
-        t.getK().print();
-        t.getNormal().print();
-        oldPos.print();
-        newPos.print();
-        t.getCollision().print();
+        //cout << "Collision!" << endl;
+        //t.getI().print();
+        //t.getJ().print();
+        //t.getK().print();
+        //t.getNormal().print();
+        //oldPos.print();
+        //newPos.print();
+        //t.getCollision().print();
         particles[i].setVelocity(reflect(particles[i].getVelocity(), t.getNormal(), bounce, slide));
       }
     }
