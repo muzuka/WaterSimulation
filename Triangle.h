@@ -17,6 +17,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <iostream>
 #include "Vector.h"
 
 class Triangle {
@@ -29,6 +30,10 @@ class Triangle {
 
 		Triangle();
 		Triangle(Vector, Vector, Vector);
+
+		Vector getI() {return i;}
+		Vector getJ() {return j;}
+		Vector getK() {return k;}
 
 		Vector getCollision();
 		Vector getNormal();

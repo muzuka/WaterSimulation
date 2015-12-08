@@ -8,6 +8,8 @@
 
 #include "Triangle.h"
 
+ using namespace std;
+
 Triangle::Triangle() {
 
 }
@@ -19,6 +21,7 @@ Triangle::Triangle(Vector i, Vector j, Vector k) {
 	Vector ij = i - j;
 	Vector kj = k - j;
 	this->normal = Vector::crossProduct(ij, kj);
+	this->normal.normalize();
 }
 
 Vector Triangle::getCollision() {
@@ -67,9 +70,9 @@ bool Triangle::intersect(Vector p1, Vector p2) {
 	collision = p1 + dir * r;
 
 	float uu, uv, vv, wu, wv, D;
-  Vector u, v;
-  u = j - i;
-  v = k - i;
+  	Vector u, v;
+  	u = j - i;
+  	v = k - i;
 
 	// is point inside Triangle?
 	uu = Vector::dotProduct(u, u);
