@@ -56,7 +56,7 @@ int numOfPoints   = 10;
 bool simulate     = false;
 bool debug        = false;
 double sigma      = 0.42f;
-Vector gravity    = Vector(0.0f, -9.81f, 0.0f);
+Vector gravity    = Vector(0.0f, -1.0f, 0.0f);
 
 double timeStep  = 0.1f;
 double pointSize = 10.0f;
@@ -89,7 +89,7 @@ const char* vertexShaderText =
 const char* fragmentShaderText =
   "#version 120\n"
   "void main() {"
-    "gl_FragColor = vec4(0.372, 0.659, 1.0, 1.0);"
+  "gl_FragColor = vec4(0.372, 0.659, 1.0, 1.0);"
   "}";
   
 const char* buttonVertShaderText = 
