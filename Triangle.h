@@ -42,6 +42,7 @@ class Triangle {
 
     // tests for intersection by a line
 		bool intersect(Vector, Vector);
+    bool intersectMT(Vector, Vector);
 };
 
 #endif

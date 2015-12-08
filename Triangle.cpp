@@ -64,12 +64,12 @@ bool Triangle::intersect(Vector p1, Vector p2) {
 
 	// get intersect point on plane
 	r = a / b;
-	if(r < 0.0f)
+	if(r < 0.0f || r > 1.0f)
 		return false;
 
 	collision = p1 + dir * r;
 
-	float uu, uv, vv, wu, wv, D;
+	float uu, uv, vv, wu, wv, denom;
   	Vector u, v;
   	u = j - i;
   	v = k - i;
@@ -81,16 +81,54 @@ bool Triangle::intersect(Vector p1, Vector p2) {
 	w = collision - i;
 	wu = Vector::dotProduct(w, u);
 	wv = Vector::dotProduct(w, v);
-	D = uv * uv - uu * vv;
+	denom = uv * uv - uu * vv;
 
 	// get and test parametric coordinates
 	float s, t;
-	s = (uv * wv - vv * wu) / D;
+	s = (uv * wv - vv * wu) / denom;
 	if(s < 0.0f || s > 1.0f)
 		return false;
-	t = (uv * wu - uu * wv) / D;
+	t = (uv * wu - uu * wv) / denom;
 	if(t < 0.0f || (s+t) > 1.0f)
 		return false;
 
 	return true;
+}
+
+bool Triangle::intersectMT(Vector p1, Vector p2) {
+  Vector e1, e2;
+  Vector p, q, T, d;
+  double det, inv_det, u, v;
+  double t;
+  
+  e1 = j - i;
+  e2 = k - i;
+  d = p2 - p1;
+  
+  p = Vector::crossProduct(d, e2);
+  det = Vector::dotProduct(e1, p);
+  
+  if(det > -0.000001f && det < 0.000001f)
+    return false;
+  inv_det = 1.0f / det;
+  
+  T = p1 - i;
+  
+  u = Vector::dotProduct(T, p) * inv_det;
+  if(u < 0.0f || u > 1.0f)
+    return false;
+  
+  q = Vector::crossProduct(T, e1);
+  
+  v = Vector::dotProduct(d, q) * inv_det;
+  if(v < 0.0f || u + v > 1.0f)
+    return 0;
+    
+  t = Vector::dotProduct(e2, q) * inv_det;
+  
+  if(t > 0.000001f) {
+    return true;
+  }
+  
+  return false;
 }
