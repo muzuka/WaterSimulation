@@ -114,7 +114,7 @@ const char* triangleVertShaderText =
 const char* triangleFragShaderText =
   "#version 120\n"
   "void main() {"
-  "gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 0.5f);"
+  "gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
   "}";
 
 void checkForError(const char* func) {
@@ -396,6 +396,10 @@ void checkCollision(int i) {
       if(t.intersect(oldPos, newPos)) {
         // process collision
         cout << "Collision!" << endl;
+        t.getI().print();
+        t.getJ().print();
+        t.getK().print();
+        t.getNormal().print();
         oldPos.print();
         newPos.print();
         t.getCollision().print();
@@ -477,11 +481,12 @@ void render() {
     glLoadIdentity();
     glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
     
-    int colorUniformLoc = glGetUniformLocation(buttonShaderProgram, "color");
+    int colorUniformLoc;
 
     glUseProgram(buttonShaderProgram);
 
     for(Button b : buttons) {
+      colorUniformLoc = glGetUniformLocation(buttonShaderProgram, "color");
       glUniform3f(colorUniformLoc, b.getColor().getX(), b.getColor().getY(), b.getColor().getZ());
       b.render();
     }
@@ -500,20 +505,43 @@ void scrollFunc(GLFWwindow* win, double x, double y) {
 
 void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mods) {
   if(action == GLFW_PRESS) {
-    if(key == GLFW_KEY_ENTER) // update timestep
-      update();
-    if(key == GLFW_KEY_SPACE) // toggle simulation
-      simulate = !simulate;
-    if(key == GLFW_KEY_D)     // set debug
-      debug = !debug;
-    if(key == GLFW_KEY_UP)    // rotate X-axis
-      rotationX += 10.0f;
-    if(key == GLFW_KEY_DOWN)  // rotate X-axis
-      rotationX -= 10.0f;
-    if(key == GLFW_KEY_LEFT)  // rotate Y-axis
-      rotationY -= 10.0f;
-    if(key == GLFW_KEY_RIGHT) // rotate Y-axis
-      rotationY += 10.0f;
+    switch(key) {
+      case GLFW_KEY_ENTER:
+        update();
+        break;
+      case GLFW_KEY_SPACE:
+        simulate = !simulate;
+        break;
+      case GLFW_KEY_D:
+        debug = !debug;
+        break;
+      case GLFW_KEY_UP:
+        rotationX += 10.0f;
+        break;
+      case GLFW_KEY_DOWN:
+        rotationX -= 10.0f;
+        break;
+      case GLFW_KEY_LEFT:
+        rotationY += 10.0f;
+        break;
+      case GLFW_KEY_RIGHT:
+        rotationY -= 10.0f;
+        break;
+      case GLFW_KEY_W:
+        sim = WATERFALL;
+        init();
+        break;
+      case GLFW_KEY_E:
+        sim = FUNNEL;
+        init();
+        break;
+      case GLFW_KEY_R:
+        sim = STIRRING;
+        init();
+        break;
+      default:
+        break;
+    }
   }
 }
 
@@ -525,7 +553,7 @@ void mouseFunc(GLFWwindow* window, int button, int action, int mods) {
     cout << "mouseFunc called at " << x << " " << y << endl;
     
     for(Button b : buttons) {
-      if(b.inside(x, y)) {
+      if(b.inside(1.0f/x, 1.0f/y)) {
         cout << "button pressed" << endl;
         sim = b.getSim();
         init();
