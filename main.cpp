@@ -45,7 +45,7 @@ Model mesh;
 vector<Particle> particles;
 vector<Button> buttons;
 
-Simulation sim    = WATERFALL;
+Simulation sim    = SHOWER;
 int pointXStart   = 0;
 int pointYStart   = 0;
 int pointZStart   = 0;
@@ -88,8 +88,9 @@ const char* vertexShaderText =
   "}";
 const char* fragmentShaderText =
   "#version 120\n"
+  "uniform float density;"
   "void main() {"
-  "gl_FragColor = vec4(0.372, 0.659, 1.0, 1.0);"
+  "gl_FragColor = vec4(0.372, 0.659/density, 1.0, 1.0);"
   "}";
   
 const char* buttonVertShaderText = 
@@ -465,8 +466,15 @@ void render() {
       
     glUseProgram(shaderProgram);
 
-    for(Particle p : particles)
+    int densityUniformLoc;
+
+    for(Particle p : particles) {
+      densityUniformLoc = glGetUniformLocation(shaderProgram, "density");
+      checkForError("glGetUniformLocation");
+      glUniform1f(densityUniformLoc, p.getDensity());
+      checkForError("glUniform1f");
       p.render();
+    }
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -487,7 +495,9 @@ void render() {
 
     for(Button b : buttons) {
       colorUniformLoc = glGetUniformLocation(buttonShaderProgram, "color");
+      checkForError("glGetUniformLocation");
       glUniform3f(colorUniformLoc, b.getColor().getX(), b.getColor().getY(), b.getColor().getZ());
+      checkForError("glUniform3f");
       b.render();
     }
     
