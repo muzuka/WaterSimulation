@@ -55,7 +55,7 @@ int pointDepth    = 5;
 int numOfPoints   = 10;
 bool simulate     = false;
 bool debug        = false;
-double sigma      = 0.9f;
+double sigma      = 2.0f;
 double viscosity  = 0.1f;
 Vector gravity    = Vector(0.0f, -1.0f, 0.0f);
 
@@ -167,13 +167,15 @@ double density(int i) {
 }
 
 double pressure(int i) {
-  return 0.01f * pow(particles[i].getDensity() - 0.05f, 3.0f);
+  return 0.01f * pow(particles[i].getDensity() - 0.05f, 9.0f);
 }
 
 Vector accelDueToPressure(int i) {
   Vector result = Vector();
-  for(int j = 0; j < numOfPoints; j++)
-    result += kernelGradient(particles[j].getPosition() - particles[i].getPosition()) * (particles[j].getPressure() + particles[i].getPressure()) / particles[j].getDensity();
+  for(int j = 0; j < numOfPoints; j++) {
+    result += kernelGradient(particles[j].getPosition() - particles[i].getPosition()) * (particles[j].getPressure() + particles[i].getPressure()) / (particles[j].getDensity() * 2.0f);  
+  }
+  result.print();
   return result / particles[i].getDensity();
 }
 
@@ -194,6 +196,8 @@ vector<Vector> getParticlePositions() {
 
 void cleanUp() {
   glDeleteProgram(shaderProgram);
+  glDeleteProgram(buttonShaderProgram);
+  glDeleteProgram(triangleShaderProgram);
 
   glfwDestroyWindow(menu);
   glfwDestroyWindow(window);
@@ -392,15 +396,6 @@ void checkCollision(int i) {
     newPos = oldPos + particles[i].getVelocity();
     for(Triangle t : mesh.getMesh()) {
       if(t.intersect(oldPos, newPos)) {
-        // process collision
-        //cout << "Collision!" << endl;
-        //t.getI().print();
-        //t.getJ().print();
-        //t.getK().print();
-        //t.getNormal().print();
-        //oldPos.print();
-        //newPos.print();
-        //t.getCollision().print();
         particles[i].setVelocity(reflect(particles[i].getVelocity(), t.getNormal(), bounce, slide));
       }
     }
