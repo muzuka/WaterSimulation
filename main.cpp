@@ -31,7 +31,6 @@
 #include <map>
 #include "Vector.h"
 #include "Particle.h"
-#include "Button.h"
 #include "Simulation.h"
 #include "Triangle.h"
 #include "Model.h"
@@ -43,7 +42,6 @@ GLFWwindow* window;
 
 Model mesh;
 vector<Particle> particles;
-vector<Button> buttons;
 
 Simulation sim    = SHOWER;
 int pointXStart   = 0;
@@ -75,7 +73,6 @@ int menuHeight   = 250;
 //rendering
 GLenum       glError;
 unsigned int shaderProgram;
-unsigned int buttonShaderProgram;
 unsigned int triangleShaderProgram;
 unsigned int vertexShader;
 unsigned int fragShader;
@@ -92,19 +89,6 @@ const char* fragmentShaderText =
   "uniform float density;"
   "void main() {"
   "gl_FragColor = vec4(0.372, 0.659/density, 1.0, 1.0);"
-  "}";
-  
-const char* buttonVertShaderText = 
-  "#version 120\n"
-  "void main() {"
-  "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
-  "}";
-  
-const char* buttonFragShaderText =
-  "#version 120\n"
-  "uniform vec3 color;"
-  "void main() {"
-  "gl_FragColor = vec4(color, 1.0f);"
   "}";
   
 const char* triangleVertShaderText = 
@@ -264,26 +248,6 @@ void initStirring() {
     }
   }
   mesh = Model("CUP.obj");
-}
-
-// sets button positions.
-void initButtons() {
-  double z = 0.0f;
-  double top = -0.5f;
-  double rightSide = -0.5f;
-  double leftSide = -1.0f;
-  buttons = vector<Button>();
-
-  buttons.push_back(Button(CUP, Vector(leftSide, top - 0.1f, z), Vector(rightSide, top, z)));
-  buttons[0].setColor(Vector(1.0f, 0.0f, 0.0f));
-  buttons.push_back(Button(SHOWER, Vector(leftSide, top - 0.2f, z), Vector(rightSide, top - 0.1f, z)));
-  buttons[1].setColor(Vector(0.0f, 1.0f, 0.0f));
-  buttons.push_back(Button(WATERFALL, Vector(leftSide, top - 0.3f, z), Vector(rightSide, top - 0.2f, z)));
-  buttons[2].setColor(Vector(0.0f, 0.0f, 1.0f));
-  buttons.push_back(Button(FUNNEL, Vector(leftSide, top - 0.4f, z), Vector(rightSide, top - 0.3f, z)));
-  buttons[3].setColor(Vector(1.0f, 1.0f, 0.0f));
-  buttons.push_back(Button(STIRRING, Vector(leftSide, top - 0.5f, z), Vector(rightSide, top - 0.4f, z)));
-  buttons[4].setColor(Vector(1.0f, 0.0f, 1.0f));
 }
 
 void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
@@ -474,33 +438,6 @@ void render() {
 
     glfwSwapBuffers(window);
     glfwPollEvents();
-
-    // MENU Rendering Start ############################################
-    glfwMakeContextCurrent(menu);
-
-    glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT);
-        
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
-    
-    int colorUniformLoc;
-
-    glUseProgram(buttonShaderProgram);
-
-    for(Button b : buttons) {
-      colorUniformLoc = glGetUniformLocation(buttonShaderProgram, "color");
-      //checkForError("glGetUniformLocation");
-      glUniform3f(colorUniformLoc, b.getColor().getX(), b.getColor().getY(), b.getColor().getZ());
-      //checkForError("glUniform3f");
-      b.render();
-    }
-    
-    glfwSwapBuffers(menu);
-    glfwPollEvents();
-
-    glfwMakeContextCurrent(window);
 }
 
 // Use mouse wheel to zoom
@@ -551,23 +488,6 @@ void keyboardFunc(GLFWwindow* window, int key, int scancode, int action, int mod
   }
 }
 
-void mouseFunc(GLFWwindow* window, int button, int action, int mods) {
-  double x, y;
-
-  if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-    glfwGetCursorPos(menu, &x, &y);
-    cout << "mouseFunc called at " << x << " " << y << endl;
-    
-    for(Button b : buttons) {
-      if(b.inside(1.0f/x, 1.0f/y)) {
-        cout << "button pressed" << endl;
-        sim = b.getSim();
-        init();
-      }
-    }
-  }
-}
-
 void errorFunc(int error, const char* description) {
   cout << description << endl;
 }
@@ -587,18 +507,10 @@ int main(int argc, char **argv)
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
-
-  menu = glfwCreateWindow(menuWidth, menuHeight, "Menu", NULL, NULL);
-  if(!menu) {
-    cout << "menu failed to be created" << endl;
-    glfwTerminate();
-    exit(EXIT_FAILURE);
-  }
   
 	glfwMakeContextCurrent(window);
   glfwSetKeyCallback(window, keyboardFunc);
   glfwSetScrollCallback(window, scrollFunc);
-  glfwSetMouseButtonCallback(menu, mouseFunc);
 
 	init();
   initButtons();
