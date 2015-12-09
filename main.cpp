@@ -180,7 +180,7 @@ double pressure(int i) {
 Vector accelDueToPressure(int i) {
   Vector result = Vector();
   for(int j = 0; j < numOfPoints; j++) {
-    result += kernelGradient(particles[j].getPosition() - particles[i].getPosition()) * (particles[j].getPressure() + particles[i].getPressure()) / (particles[j].getDensity() * 2.0f);  
+    result += kernelGradient(particles[i].getPosition() - particles[j].getPosition()) * (particles[j].getPressure() + particles[i].getPressure()) / (particles[j].getDensity() * 2.0f);  
   }
   return result / particles[i].getDensity();
 }
@@ -447,7 +447,6 @@ void render() {
 
 // Use mouse wheel to zoom
 void scrollFunc(GLFWwindow* win, double x, double y) {
-
     zoom += y;
 }
 
