@@ -37,16 +37,31 @@
 
 using namespace std;
 
-GLFWwindow* menu;
 GLFWwindow* window;
 
 Model mesh;
 vector<Particle> particles;
 
-Simulation sim    = SHOWER;
+Simulation sim    = WATERFALL;
 int pointXStart   = 0;
 int pointYStart   = 0;
 int pointZStart   = 0;
+
+// Waterfall
+int waterfallHeight = 5;
+int waterfallWidth  = 5;
+int waterfallDepth  = 5;
+
+// Funnel
+int funnelHeight  = 5;
+int funnelWidth   = 5;
+int funnelDepth   = 5;
+
+// Stirring
+int stirringHeight  = 5;
+int stirringWidth   = 5;
+int stirringDepth   = 5;
+
 int pointHeight   = 5;
 int pointWidth    = 5;
 int pointDepth    = 5;
@@ -129,6 +144,14 @@ void checkForError(const char* func) {
   }
 }
 
+void cleanUp() {
+  glDeleteProgram(shaderProgram);
+  glDeleteProgram(triangleShaderProgram);
+
+  glfwDestroyWindow(window);
+  glfwTerminate();
+}
+
 double kernel(Vector p) {
   double normalDistance = Vector::dotProduct(p, p) / (2 * pow(sigma, 2));
   if(normalDistance > 50)
@@ -159,7 +182,6 @@ Vector accelDueToPressure(int i) {
   for(int j = 0; j < numOfPoints; j++) {
     result += kernelGradient(particles[j].getPosition() - particles[i].getPosition()) * (particles[j].getPressure() + particles[i].getPressure()) / (particles[j].getDensity() * 2.0f);  
   }
-  result.print();
   return result / particles[i].getDensity();
 }
 
@@ -168,24 +190,6 @@ Vector accelDueToViscosity(int i) {
   for(int j = 0; j < numOfPoints; j++)
     result += ((particles[j].getVelocity() - particles[i].getVelocity()) / particles[j].getDensity()) * viscosity * kernel(particles[j].getPosition() - particles[i].getPosition());
   return result / particles[i].getDensity();
-}
-
-vector<Vector> getParticlePositions() {
-  vector<Vector> positions = vector<Vector>();
-  for(int i = 0; i < numOfPoints; i++) {
-    positions.push_back(particles[i].getPosition());
-  }
-  return positions;
-}
-
-void cleanUp() {
-  glDeleteProgram(shaderProgram);
-  glDeleteProgram(buttonShaderProgram);
-  glDeleteProgram(triangleShaderProgram);
-
-  glfwDestroyWindow(menu);
-  glfwDestroyWindow(window);
-  glfwTerminate();
 }
 
 void initCup() {
@@ -214,9 +218,9 @@ void initWaterfall() {
   rotationX = 30.0f;
   rotationY = -40.0f;
   
-  for(int i = 0; i < pointWidth; i++) {
-    for(int j = 0; j < pointHeight; j++) {
-      for(int k = 0; k < pointDepth; k++) {
+  for(int i = 0; i < waterfallWidth; i++) {
+    for(int j = 0; j < waterfallHeight; j++) {
+      for(int k = 0; k < waterfallDepth; k++) {
         particles.push_back(Particle(Vector(i/10.0f, 0.9f + (j/10.0f), (k/10.0f))));
       }
     }
@@ -228,9 +232,11 @@ void initFunnel() {
   zoom = -3.0f;
   rotationX = 60.0f;
   
-  for(int i = 0; i < pointWidth; i++) {
-    for(int j = 0; j < pointHeight; j++) {
-      particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), 0.0f)));
+  for(int i = 0; i < funnelWidth; i++) {
+    for(int j = 0; j < funnelHeight; j++) {
+      for(int k = 0; k < funnelDepth; k++) {
+        particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), (k/10.0f))));
+      } 
     }
   }
   mesh = Model("FUNNEL.obj");
@@ -240,9 +246,9 @@ void initStirring() {
   zoom = -3.0f;
   rotationX = 50.0f;
   
-  for(int i = 0; i < pointWidth; i++) {
-    for(int j = 0; j < pointHeight; j++) {
-      for(int k = 0; k < pointDepth; k++) {
+  for(int i = 0; i < stirringWidth; i++) {
+    for(int j = 0; j < stirringHeight; j++) {
+      for(int k = 0; k < stirringDepth; k++) {
         particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), (k/10.0f))));
       } 
     }
@@ -321,15 +327,15 @@ void init() {
           initShower();
           break;
         case WATERFALL:
-          numOfPoints = pointWidth * pointHeight * pointDepth;
+          numOfPoints = waterfallWidth * waterfallHeight * waterfallDepth;
           initWaterfall();
           break;
         case FUNNEL:
-          numOfPoints = pointWidth * pointHeight;
+          numOfPoints = funnelWidth * funnelHeight * funnelDepth;
           initFunnel();
           break;
         case STIRRING:
-          numOfPoints = pointWidth * pointHeight * pointDepth;
+          numOfPoints = stirringWidth * stirringHeight * stirringDepth;
           initStirring();
           break;
         default:
@@ -337,7 +343,6 @@ void init() {
     }
 
     shaderProgram = loadShaders(vertexShaderText, fragmentShaderText);
-    buttonShaderProgram = loadShaders(buttonVertShaderText, buttonFragShaderText);
     triangleShaderProgram = loadShaders(triangleVertShaderText, triangleFragShaderText);
     
     simulate = false;
@@ -513,7 +518,6 @@ int main(int argc, char **argv)
   glfwSetScrollCallback(window, scrollFunc);
 
 	init();
-  initButtons();
 
   cout << "about to start loop" << endl;
 	while(!glfwWindowShouldClose(window)) {
