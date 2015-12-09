@@ -12,9 +12,9 @@
  #include "Vector.h"
 
 Vector::Vector() {
-  this->x = x;
-  this->y = y;
-  this->z = z;
+  this->x = 0;
+  this->y = 0;
+  this->z = 0;
 }
 
  Vector::Vector(double x, double y, double z) {
@@ -103,6 +103,10 @@ void Vector::normalize() {
 		this->y = y / len;
 		this->z = z / len;
 	}
+}
+
+void Vector::printOneLine() {
+	printf("(%.2f %.2f %.2f)", x, y, z);
 }
 
 void Vector::print() {

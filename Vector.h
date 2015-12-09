@@ -12,6 +12,8 @@
 
  #include <math.h>
  #include <stdio.h>
+ #include <string>
+ #include <sstream>
 
 class Vector {
 	
@@ -43,7 +45,8 @@ public:
 
 	double length();
 	void normalize();
-  
+
+  	void printOneLine();
 	void print();
 
 };
