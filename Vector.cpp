@@ -106,9 +106,9 @@ void Vector::normalize() {
 }
 
 void Vector::printOneLine() {
-	printf("(%.2f %.2f %.2f)", x, y, z);
+	printf("(%.4f %.4f %.4f)", x, y, z);
 }
 
 void Vector::print() {
-  printf("%.2f %.2f %.2f\n", x, y, z);
+  printf("%.4f %.4f %.4f\n", x, y, z);
 }
