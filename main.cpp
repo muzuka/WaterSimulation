@@ -157,11 +157,15 @@ double kernel(Vector p) {
   if(normalDistance > 50)
     return 0;
   else
-    return (1.0f / pow((sqrt(3.14f * 2) * sigma), 3)) * exp(-normalDistance);
+    return (5.0f / pow((sqrt(3.14f * 2) * sigma), 3)) * exp(-normalDistance);
 }
 
-Vector kernelGradient(Vector p) {
+Vector kernelGradient(Vector p, int i) {
   Vector temp = p;
+  if(i % 100 == 0) {
+    cout << "Kernel: ";
+    cout << kernel(p) << endl;
+  }
   return ((temp / pow(sigma, 3)) * -1) * kernel(p);
 }
 
@@ -180,7 +184,13 @@ double pressure(int i) {
 Vector accelDueToPressure(int i) {
   Vector result = Vector();
   for(int j = 0; j < numOfPoints; j++) {
-    result += kernelGradient(particles[i].getPosition() - particles[j].getPosition()) * (particles[j].getPressure() + particles[i].getPressure()) / (particles[j].getDensity() * 2.0f);  
+    result += kernelGradient(particles[i].getPosition() - particles[j].getPosition(), j) * (particles[j].getPressure() + particles[i].getPressure()) / (particles[j].getDensity() * 2.0f);  
+    if(j % 100 == 0) {
+      cout << i << ": accelPressure" << endl;
+      cout << "kernelGradient: ";
+      kernelGradient(particles[i].getPosition() - particles[j].getPosition(), j).print();
+      cout << "pressure: " << (particles[j].getPressure() + particles[i].getPressure()) << endl;
+    }
   }
   return result / particles[i].getDensity();
 }
