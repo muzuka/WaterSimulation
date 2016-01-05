@@ -46,10 +46,42 @@ void Triangle::render() {
   // glEnd();
 }
 
+struct dotProductObject {
+	float uu, uv, vv, wu, wv, denom;
+};
+
+dotProductObject buildDPO(Vector u, Vector v, Vector c, Vector i) {
+	Vector w;
+	dotProductObject temp;
+
+	temp.uu = Vector::dotProduct(u, u);
+	temp.uv = Vector::dotProduct(u, v);
+	temp.vv = Vector::dotProduct(v, v);
+	w = c - i;
+	temp.wu = Vector::dotProduct(w, u);
+	temp.wv = Vector::dotProduct(w, v);
+	temp.denom = temp.uv * temp.uv - temp.uu * temp.vv;
+
+	return temp;
+}
+
+bool testParameters(dotProductObject dpo) {
+	float s, t;
+	s = (dpo.uv * dpo.wv - dpo.vv * dpo.wu) / dpo.denom;
+	if(s < 0.0f || s > 1.0f)
+		return false;
+	t = (dpo.uv * dpo.wu - dpo.uu * dpo.wv) / dpo.denom;
+	if(t < 0.0f || (s+t) > 1.0f)
+		return false;
+
+	return true;
+}
+
 // Code from http://geomalgorithms.com/a06-_intersect-2.html
 bool Triangle::intersect(Vector p1, Vector p2) {
-	Vector dir, wo, w;
-	float r, a, b;
+	float 				r, a, b;
+	Vector 				dir, wo, u, v;
+	dotProductObject 	dpo;
 
 	dir = p2 - p1;
 	wo = p1 - i;
@@ -68,33 +100,16 @@ bool Triangle::intersect(Vector p1, Vector p2) {
 		return false;
 
 	collision = p1 + dir * r;
-
-	float uu, uv, vv, wu, wv, denom;
-  	Vector u, v;
   	u = j - i;
   	v = k - i;
 
-	// is point inside Triangle?
-	uu = Vector::dotProduct(u, u);
-	uv = Vector::dotProduct(u, v);
-	vv = Vector::dotProduct(v, v);
-	w = collision - i;
-	wu = Vector::dotProduct(w, u);
-	wv = Vector::dotProduct(w, v);
-	denom = uv * uv - uu * vv;
+  	dpo = buildDPO(u, v, collision, i);
 
 	// get and test parametric coordinates
-	float s, t;
-	s = (uv * wv - vv * wu) / denom;
-	if(s < 0.0f || s > 1.0f)
-		return false;
-	t = (uv * wu - uu * wv) / denom;
-	if(t < 0.0f || (s+t) > 1.0f)
-		return false;
-
-	return true;
+	return testParameters(dpo);
 }
 
+// a different intersect algorithm
 bool Triangle::intersectMT(Vector p1, Vector p2) {
   Vector e1, e2;
   Vector p, q, T, d;
