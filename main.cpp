@@ -68,7 +68,7 @@ int pointDepth    = 5;
 int numOfPoints   = 10;
 bool simulate     = false;
 bool debug        = false;
-double sigma      = 2.0f;
+double sigma      = 1.5f;
 double viscosity  = 0.1f;
 Vector gravity    = Vector(0.0f, -1.0f, 0.0f);
 
@@ -94,6 +94,7 @@ unsigned int fragShader;
 unsigned int particleVBO;
 unsigned int particleVAO;
 int positionInfo;
+
 const char* vertexShaderText =
   "#version 120\n"
   "void main() {"
@@ -157,22 +158,18 @@ double kernel(Vector p) {
   if(normalDistance > 50)
     return 0;
   else
-    return (5.0f / pow((sqrt(3.14f * 2) * sigma), 3)) * exp(-normalDistance);
+    return (1.0f / pow((sqrt(3.14f * 2) * sigma), 3)) * exp(-normalDistance);
 }
 
 Vector kernelGradient(Vector p, int i) {
   Vector temp = p;
-  if(i % 100 == 0) {
-    cout << "Kernel: ";
-    cout << kernel(p) << endl;
-  }
   return ((temp / pow(sigma, 3)) * -1) * kernel(p);
 }
 
 double density(int i) {
   double result = 0.0f;
   for(int j = 0; j < numOfPoints; j++) {
-    result += kernel(particles[i].getPosition() - particles[j].getPosition());
+    result = result + kernel(particles[i].getPosition() - particles[j].getPosition());
   }
   return result;
 }
@@ -184,21 +181,26 @@ double pressure(int i) {
 Vector accelDueToPressure(int i) {
   Vector result = Vector();
   for(int j = 0; j < numOfPoints; j++) {
-    result += kernelGradient(particles[i].getPosition() - particles[j].getPosition(), j) * (particles[j].getPressure() + particles[i].getPressure()) / (particles[j].getDensity() * 2.0f);  
-    if(j % 100 == 0) {
-      cout << i << ": accelPressure" << endl;
+    result = result + (kernelGradient(particles[i].getPosition() - particles[j].getPosition(), j) * (particles[j].getPressure() + particles[i].getPressure())) / (particles[j].getDensity() * 2.0f);  
+    if(debug && (j % 25 == 0)) {
+      cout << j << ": accelPressure" << endl;
       cout << "kernelGradient: ";
       kernelGradient(particles[i].getPosition() - particles[j].getPosition(), j).print();
       cout << "pressure: " << (particles[j].getPressure() + particles[i].getPressure()) << endl;
+      cout << "density: " << particles[j].getDensity() << endl;
+      cout << "result: ";
+      result.print();
+      cout << "accelPressure: ";
     }
   }
+  result.print();
   return result / particles[i].getDensity();
 }
 
 Vector accelDueToViscosity(int i) {
   Vector result = Vector();
   for(int j = 0; j < numOfPoints; j++)
-    result += ((particles[j].getVelocity() - particles[i].getVelocity()) / particles[j].getDensity()) * viscosity * kernel(particles[j].getPosition() - particles[i].getPosition());
+    result = result + ((particles[j].getVelocity() - particles[i].getVelocity()) / particles[j].getDensity()) * viscosity * kernel(particles[j].getPosition() - particles[i].getPosition());
   return result / particles[i].getDensity();
 }
 
@@ -368,13 +370,14 @@ Vector reflect(Vector v, Vector n, double b, double s) {
 void checkCollision(int i) {
     Vector oldPos, newPos;
     double bounce = 0.1f;
-    double slide  = 1.0f;
+    double slide  = 0.8f;
 
     // detect collision and change velocity
     oldPos = particles[i].getPosition();
-    newPos = oldPos + particles[i].getVelocity();
+    newPos = oldPos + (particles[i].getVelocity() * timeStep);
     for(Triangle t : mesh.getMesh()) {
       if(t.intersect(oldPos, newPos)) {
+        particles[i].setPosition(t.getCollision());
         particles[i].setVelocity(reflect(particles[i].getVelocity(), t.getNormal(), bounce, slide));
       }
     }
@@ -395,7 +398,7 @@ void update() {
     Vector accPressure = accelDueToPressure(i);
     Vector accViscosity = accelDueToViscosity(i);
     particles[i].setAcceleration(accPressure + accViscosity + gravity);
-    if(debug && i % 10 == 0) {
+    if(debug && (i % 10 == 0)) {
       cout << i << ": acceleration ";
       particles[i].getAcceleration().print();
       cout << i << ": pressure ";
