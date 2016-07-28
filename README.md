@@ -1,6 +1,16 @@
 # WaterSimulation
 Implementation of Smooth Particle Hydrodynamic water physics using obj files as input obstacles.
 
+## Controls
+
+* SPACE key -> toggle animation
+* ENTER key -> step through animation when paused
+* ARROW keys -> rotate object
+
+* W key -> loads waterfall scene
+* E key -> loads funnel scene
+* R key -> loads stirring scene
+
 ## Getting Started
 
 These instructions will help with running the program.
