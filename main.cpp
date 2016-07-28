@@ -213,7 +213,7 @@ void initCup() {
       particles.push_back(Particle(Vector(i/10.0f, 0.9f - (j/10.0f), 0.0f)));
     }
   }
-  mesh = Model("CUP.obj");
+  mesh = Model("models/CUP.obj");
 }
 
 void initShower() {
@@ -222,7 +222,7 @@ void initShower() {
   
   for(int i = 0; i < pointWidth; i++)
       particles.push_back(Particle(Vector(i/10.0f, 0.9f, 0.0f)));
-  mesh = Model("SHOWER.obj");
+  mesh = Model("models/SHOWER.obj");
 }
 
 void initWaterfall() {
@@ -237,7 +237,7 @@ void initWaterfall() {
       }
     }
   }
-  mesh = Model("WATERFALL.obj");
+  mesh = Model("models/WATERFALL.obj");
 }
 
 void initFunnel() {
@@ -251,7 +251,7 @@ void initFunnel() {
       } 
     }
   }
-  mesh = Model("FUNNEL.obj");
+  mesh = Model("models/FUNNEL.obj");
 }
 
 void initStirring() {
@@ -265,7 +265,7 @@ void initStirring() {
       } 
     }
   }
-  mesh = Model("CUP.obj");
+  mesh = Model("models/CUP.obj");
 }
 
 void attachShaders(unsigned int vs, unsigned int fs, unsigned int *shaderProg) {
