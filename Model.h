@@ -26,15 +26,15 @@ class Model {
 
 	public:
 	
-	Model();
-	Model(std::vector<Triangle>);
-	Model(const char*);
+		Model();
+		Model(std::vector<Triangle>);
+		Model(const char*);
 
-	void render();
+		void render();
 
-	std::vector<Triangle> getMesh();
+		std::vector<Triangle> getMesh();
 
-	std::vector<Triangle> extractOBJ(const char*);
+		std::vector<Triangle> extractOBJ(const char*);
 };
 
 #endif

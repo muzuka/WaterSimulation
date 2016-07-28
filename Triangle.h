@@ -38,11 +38,11 @@ class Triangle {
 		Vector getCollision();
 		Vector getNormal();
     
-    void render();
+    	void render();
 
     // tests for intersection by a line
 		bool intersect(Vector, Vector);
-    bool intersectMT(Vector, Vector);
+    	bool intersectMT(Vector, Vector);
 };
 
 #endif
